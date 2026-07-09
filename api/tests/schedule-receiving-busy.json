@@ -1,0 +1,121 @@
+{
+  "service_date": "2026-01-22",
+  "cases": [
+    {
+      "case_pos": 1,
+      "patient_id": "30001",
+      "patient_name": "ANDERSON, KAREN",
+      "patient_dob": "1947-03-22",
+      "dx": "H25.812",
+      "cpt": "00142",
+      "eye": "LEFT",
+      "minutes": 14
+    },
+    {
+      "case_pos": 2,
+      "patient_id": "30002",
+      "patient_name": "BENNETT, THOMAS",
+      "patient_dob": "1953-10-11",
+      "dx": "H25.811",
+      "cpt": "00142",
+      "eye": "RIGHT",
+      "minutes": 22
+    },
+    {
+      "case_pos": 3,
+      "patient_id": "30003",
+      "patient_name": "CAMPBELL, NANCY",
+      "patient_dob": "1961-06-04",
+      "dx": "H25.10",
+      "cpt": "00140",
+      "eye": "LEFT"
+    },
+    {
+      "case_pos": 4,
+      "patient_id": "30004",
+      "patient_name": "DIAZ, CARLOS",
+      "patient_dob": "1949-12-19",
+      "dx": "H25.11",
+      "cpt": "00140",
+      "eye": "RIGHT",
+      "minutes": 16
+    },
+    {
+      "case_pos": 5,
+      "patient_id": "30005",
+      "patient_name": "EDWARDS, HELEN",
+      "patient_dob": "1956-04-07",
+      "dx": "H26.9",
+      "cpt": "00140",
+      "eye": "LEFT",
+      "minutes": 11
+    },
+    {
+      "case_pos": 6,
+      "patient_id": "30006",
+      "patient_name": "FISHER, GEORGE",
+      "patient_dob": "1944-09-28",
+      "dx": "H25.812",
+      "cpt": "00142",
+      "eye": "LEFT"
+    },
+    {
+      "case_pos": 7,
+      "patient_id": "30007",
+      "patient_name": "GREEN, BETTY",
+      "patient_dob": "1969-01-15",
+      "dx": "H25.811",
+      "cpt": "00142",
+      "eye": "RIGHT",
+      "minutes": 19
+    },
+    {
+      "case_pos": 8,
+      "patient_id": "30008",
+      "patient_name": "HARRIS, DONALD",
+      "patient_dob": "1951-08-31",
+      "dx": "H25.10",
+      "cpt": "00140",
+      "eye": "LEFT",
+      "minutes": 13
+    },
+    {
+      "case_pos": 9,
+      "patient_id": "30009",
+      "patient_name": "IRVING, SANDRA",
+      "patient_dob": "1963-05-24",
+      "dx": "H25.11",
+      "cpt": "00140",
+      "eye": "RIGHT"
+    },
+    {
+      "case_pos": 10,
+      "patient_id": "30010",
+      "patient_name": "JOHNSON, PAUL",
+      "patient_dob": "1942-11-02",
+      "dx": "H26.9",
+      "cpt": "00140",
+      "eye": "LEFT",
+      "minutes": 27
+    },
+    {
+      "case_pos": 11,
+      "patient_id": "30011",
+      "patient_name": "KIM, SO-YOUNG",
+      "patient_dob": "1975-07-08",
+      "dx": "H25.812",
+      "cpt": "00142",
+      "eye": "LEFT",
+      "minutes": 9
+    },
+    {
+      "case_pos": 12,
+      "patient_id": "30012",
+      "patient_name": "LOPEZ, ANTONIO",
+      "patient_dob": "1957-02-17",
+      "dx": "H25.811",
+      "cpt": "00142",
+      "eye": "RIGHT"
+    }
+  ]
+}

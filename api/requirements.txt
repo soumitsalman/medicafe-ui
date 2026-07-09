@@ -1,0 +1,8 @@
+fastapi[standard]
+pydantic
+duckdb
+numpy
+pandas
+loguru
+tenacity
+icecream

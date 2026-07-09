@@ -1,0 +1,14 @@
+{
+  "service_date": "2026-01-20",
+  "cases": [
+    {
+      "case_pos": 1,
+      "patient_id": "10001",
+      "patient_name": "TEST, PATIENT",
+      "patient_dob": "1960-05-05",
+      "dx": "H25.812",
+      "cpt": "00142",
+      "eye": "LEFT"
+    }
+  ]
+}
