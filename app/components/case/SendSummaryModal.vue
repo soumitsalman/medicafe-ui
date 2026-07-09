@@ -16,7 +16,7 @@ defineProps({
     title="Sent"
   >
     <template #body>
-      <div class="flex flex-col gap-2 justify-center text-sm text-default">
+      <div class="flex flex-wrap gap-2 items-center justify-center text-sm">
         <UBadge
           v-if="summary.billableCount"
           color="primary"
@@ -31,7 +31,7 @@ defineProps({
         </UBadge>
         <UBadge
           v-if="summary.cancelledCount"
-          color="danger"
+          color="error"
         >
           {{ summary.cancelledCount }} cancelled
         </UBadge>

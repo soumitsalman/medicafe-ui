@@ -14,7 +14,7 @@ def _configured_api_key() -> str | None:
 class ApiKeyMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         configured_key = _configured_api_key()
-        if configured_key is None or request.url.path == "/health":
+        if configured_key is None or request.url.path == "/health" or request.method == "OPTIONS":
             return await call_next(request)
 
         if request.headers.get("X-API-KEY") != configured_key:

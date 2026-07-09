@@ -43,6 +43,6 @@ class BillableCasesSubmissionResponse(BaseModel):
 class BillableCasesQueryResponse(BaseModel):
     facility_id: Optional[UUID] = Field(default=DEFAULT_FACILITY_ID, description="Facility ID")
     provider_id: Optional[UUID] = Field(default=DEFAULT_PROVIDER_ID, description="Provider ID")
-    service_date: date = Field(description="Shift date (MM-dd-yyyy)")
+    service_date: Optional[date] = Field(default=None, description="Shift date (MM-dd-yyyy)")
     cases: list[CaseInfo] = Field(description="Billable cases for the shift")
 

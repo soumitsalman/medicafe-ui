@@ -1,7 +1,7 @@
 import asyncio
 from datetime import date
 from typing import Annotated
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Query
 
 from .models import DEFAULT_FACILITY_ID, DEFAULT_PROVIDER_ID, BillableCasesQueryResponse, ScheduledCasesSubmissionPayload, ScheduledCasesSubmissionResponse, BillableCasesSubmissionResponse
 from db import CaseInfo, CasesDB
@@ -31,12 +31,14 @@ async def post_schedules(payload: ScheduledCasesSubmissionPayload, cases_db: Cas
 
 @router.get("/schedules")
 async def get_schedules(cases_db: CaseDBDependency) -> list[CaseInfo]:
-    return await asyncio.to_thread(
+    items = await asyncio.to_thread(
         cases_db.query_cases, 
         facility_id=DEFAULT_FACILITY_ID,
         provider_id=DEFAULT_PROVIDER_ID,
         status=["scheduled"]
     )
+    items.sort(key=lambda x: x.case_pos)
+    return items
 
 
 @router.post("/billables")
@@ -51,14 +53,18 @@ async def post_billables(payload: list[CaseInfo], cases_db: CaseDBDependency) ->
 
 
 @router.get("/billables")
-async def get_billables(cases_db: CaseDBDependency) -> BillableCasesQueryResponse:
+async def get_billables(
+    cases_db: CaseDBDependency,
+    service_date: date = Query(default_factory=date.today),
+) -> BillableCasesQueryResponse:
     cases = await asyncio.to_thread(
         cases_db.query_cases, 
-        facility_id=DEFAULT_FACILITY_ID,
-        provider_id=DEFAULT_PROVIDER_ID,
-        status=["billable", "mission", "cancelled", "issue"]
+        # facility_id=DEFAULT_FACILITY_ID,
+        # provider_id=DEFAULT_PROVIDER_ID,
+        status=["billable", "mission", "cancelled", "issue"],
+        service_date=service_date
     )
     return BillableCasesQueryResponse(
-        service_date=max(case.service_date for case in cases if case.service_date),
+        service_date=max(case.service_date for case in cases if case.service_date) if cases else None,
         cases=cases
     )

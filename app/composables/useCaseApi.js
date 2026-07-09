@@ -15,6 +15,9 @@ export function useCaseApi() {
       `${config.public.apiBase}/cases/schedules`,
       apiFetchOptions(config.public.apiKey)
     )
+    // #region agent log
+    fetch('http://127.0.0.1:7691/ingest/ceab04ba-7a84-4b90-b033-dde09e0fe1c6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c1863d'},body:JSON.stringify({sessionId:'c1863d',location:'useCaseApi.js:getCases',message:'getCases response',data:{isArray:Array.isArray(data),count:Array.isArray(data)?data.length:null,apiBase:config.public.apiBase,hasApiKey:!!config.public.apiKey},timestamp:Date.now(),hypothesisId:'B,E'})}).catch(()=>{});
+    // #endregion
     return data.map(c => ({
       ...c,
       mission: false,

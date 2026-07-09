@@ -3,7 +3,6 @@ from typing import Optional
 from uuid import NAMESPACE_OID, UUID, uuid5
 
 import duckdb
-import pandas as pd
 
 from .models import CaseInfo, CaseStatus
 
@@ -27,6 +26,32 @@ CREATE TABLE IF NOT EXISTS cases (
     note          VARCHAR
 )
 """
+
+_CASE_COLUMNS = (
+    "case_id",
+    "facility_id",
+    "provider_id",
+    "service_date",
+    "service_time",
+    "case_pos",
+    "patient_id",
+    "patient_name",
+    "patient_dob",
+    "dx",
+    "cpt",
+    "eye",
+    "minutes",
+    "status",
+    "sub_status",
+    "note",
+)
+
+_UPDATE_COLUMNS = tuple(c for c in _CASE_COLUMNS if c != "case_id")
+_COLS_CSV = ", ".join(_CASE_COLUMNS)
+_ROW_PLACEHOLDERS = "(" + ", ".join("?" * len(_CASE_COLUMNS)) + ")"
+_UPDATE_SET_CLAUSE = ", ".join(
+    f"{c} = COALESCE(v.{c}, cases.{c})" for c in _UPDATE_COLUMNS
+)
 
 
 class CasesDB:
@@ -54,41 +79,50 @@ class CasesDB:
             if not case.status: case.status = "scheduled"
         return cases
 
+    @classmethod
+    def _row_tuple(cls, case: CaseInfo) -> tuple:
+        """Fixed-width row; unset/None fields become SQL NULL (not applied on update)."""
+        data = case.model_dump(exclude_none=True)
+        return tuple(data.get(col) for col in _CASE_COLUMNS)
+
+    @classmethod
+    def _values_clause(cls, n: int) -> str:
+        return ", ".join(_ROW_PLACEHOLDERS for _ in range(n))
+
     def store_cases(self, cases: list[CaseInfo]) -> list[UUID]:
+        if not cases:
+            return []
         cases = self._prepare_for_storage(cases)
-        df = pd.DataFrame([c.model_dump() for c in cases])
-        rows = self.conn.execute("""
-            INSERT INTO cases BY NAME SELECT * FROM df
+        params: list = []
+        for case in cases:
+            params.extend(self._row_tuple(case))
+        rows = self.conn.execute(
+            f"""
+            INSERT INTO cases ({_COLS_CSV})
+            VALUES {self._values_clause(len(cases))}
             ON CONFLICT DO NOTHING
             RETURNING case_id
-        """).fetchall()
+            """,
+            params,
+        ).fetchall()
         return [row[0] for row in rows]
 
     def update_cases(self, cases: list[CaseInfo]) -> list[UUID]:
-        df = pd.DataFrame([c.model_dump() for c in cases if c.case_id])
-        if df.empty:
+        cases = [c for c in cases if c.case_id]
+        if not cases:
             return []
-        rows = self.conn.execute("""
-            UPDATE cases SET
-                facility_id  = COALESCE(df.facility_id,  cases.facility_id),
-                provider_id  = COALESCE(df.provider_id,  cases.provider_id),
-                service_date = COALESCE(df.service_date, cases.service_date),
-                service_time = COALESCE(df.service_time, cases.service_time),
-                case_pos     = COALESCE(df.case_pos,     cases.case_pos),
-                patient_id   = COALESCE(df.patient_id,   cases.patient_id),
-                patient_name = COALESCE(df.patient_name, cases.patient_name),
-                patient_dob  = COALESCE(df.patient_dob,  cases.patient_dob),
-                dx           = COALESCE(df.dx,           cases.dx),
-                cpt          = COALESCE(df.cpt,          cases.cpt),
-                eye          = COALESCE(df.eye,          cases.eye),
-                minutes      = COALESCE(df.minutes,      cases.minutes),
-                status       = COALESCE(df.status,       cases.status),
-                sub_status   = COALESCE(df.sub_status,   cases.sub_status),
-                note         = COALESCE(df.note,         cases.note)
-            FROM df
-            WHERE cases.case_id = df.case_id
+        params: list = []
+        for case in cases:
+            params.extend(self._row_tuple(case))
+        rows = self.conn.execute(
+            f"""
+            UPDATE cases SET {_UPDATE_SET_CLAUSE}
+            FROM (VALUES {self._values_clause(len(cases))}) AS v({_COLS_CSV})
+            WHERE cases.case_id = v.case_id
             RETURNING cases.case_id
-        """).fetchall()
+            """,
+            params,
+        ).fetchall()
         return [row[0] for row in rows]
 
     def query_cases(
@@ -113,8 +147,12 @@ class CasesDB:
             params.extend(status)
 
         where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
-        df = self.conn.execute(f"SELECT * FROM cases {where}", params).df()
-        return [CaseInfo.model_validate(row) for row in df.to_dict(orient="records")]
+        result = self.conn.execute(f"SELECT * FROM cases {where}", params)
+        columns = [desc[0] for desc in result.description]
+        return [
+            CaseInfo.model_validate(dict(zip(columns, row)))
+            for row in result.fetchall()
+        ]
 
     def close(self):
         self.conn.close()

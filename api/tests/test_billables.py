@@ -40,6 +40,31 @@ def test_get_billables_after_post(client, schedule_receiving, billable_sending):
     assert statuses == {"billable", "mission", "cancelled", "issue"}
 
 
+def test_billables_null_notes_do_not_corrupt_storage(
+    client, schedule_receiving, billable_sending
+):
+    """Mixed null/string notes must not write NaN or break GET /billables."""
+    payload = []
+    for case in billable_sending:
+        row = {**case}
+        if case["status"] != "issue":
+            row["note"] = None
+        payload.append(row)
+
+    assert client.post("/cases/schedules", json=schedule_receiving).status_code == 200
+    assert client.post("/cases/billables", json=payload).status_code == 200
+
+    response = client.get("/cases/billables")
+    assert response.status_code == 200
+    by_id = {c["case_id"]: c for c in response.json()["cases"]}
+    for case in payload:
+        stored = by_id[case["case_id"]]
+        if case["status"] == "issue":
+            assert stored["note"] == case["note"]
+        else:
+            assert stored.get("note") in (None, "")
+
+
 def test_get_schedules_excludes_terminal_after_billables(
     client, schedule_receiving, billable_sending
 ):

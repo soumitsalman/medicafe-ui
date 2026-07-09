@@ -46,6 +46,11 @@ const showMission = computed(() =>
 const showNoteRow = computed(() =>
   isIssue.value && (props.caseItem.note?.trim().length > 0)
 )
+const showMinutesConfirm = computed(() => {
+  if (props.caseItem.status !== 'scheduled') return false
+  const m = minutesInput.value ?? props.caseItem.minutes
+  return Number.isInteger(m) && m > 0
+})
 
 const cardBorderClass = computed(() => {
   const { borderClass, opacityClass } = statusDisplay.value
@@ -83,6 +88,13 @@ function onMinutesChange(value) {
   } else {
     debouncedUpdate({ minutes: value })
   }
+}
+
+function onConfirmBillable() {
+  const minutes = minutesInput.value ?? props.caseItem.minutes
+  if (!Number.isInteger(minutes) || minutes <= 0) return
+  debouncedUpdate.cancel()
+  emit('update', props.caseItem.case_id, { minutes })
 }
 
 function onDxChange(value) {
@@ -149,14 +161,26 @@ function onIssueSubmit(payload) {
       <span class="shrink-0 text-sm text-muted">
         {{ formatDobWithAge(caseItem.patient_dob, caseItem.service_date) }}
       </span>
-      <UInputNumber
-        v-model.optional="minutesInput"
-        placeholder="Min"
-        :min="0"
-        :max="59"
-        class="ml-auto w-32 shrink-0"
-        @update:model-value="onMinutesChange"
-      />
+      <div class="ml-auto flex shrink-0 items-center gap-2">
+        <UButton
+          v-if="showMinutesConfirm"
+          icon="i-lucide-check"
+          color="primary"
+          variant="outline"
+          size="xs"
+          class="shrink-0 rounded-full"
+          aria-label="Confirm billable"
+          @click="onConfirmBillable"
+        />
+        <UInputNumber
+          v-model.optional="minutesInput"
+          placeholder="Min"
+          :min="0"
+          :max="59"
+          class="w-32 shrink-0"
+          @update:model-value="onMinutesChange"
+        />
+      </div>
       <span class="shrink-0 text-sm text-muted">mins</span>
     </div>
 

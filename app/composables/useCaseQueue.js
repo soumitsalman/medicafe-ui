@@ -12,11 +12,24 @@ export function useCaseQueue() {
   const { getCases, sendToOffice: apiSendToOffice } = useCaseApi()
 
   async function loadQueue() {
+    const loadId = `load_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
+    // #region agent log
+    fetch('http://127.0.0.1:7691/ingest/ceab04ba-7a84-4b90-b033-dde09e0fe1c6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c1863d'},body:JSON.stringify({sessionId:'c1863d',location:'useCaseQueue.js:loadQueue:start',message:'loadQueue start',data:{loadId,prevCount:cases.value.length,importMetaServer:import.meta.server,importMetaClient:import.meta.client},timestamp:Date.now(),hypothesisId:'A,B,D'})}).catch(()=>{});
+    // #endregion
     try {
-      cases.value = await getCases()
+      const fetched = await getCases()
+      cases.value = fetched
+      // #region agent log
+      fetch('http://127.0.0.1:7691/ingest/ceab04ba-7a84-4b90-b033-dde09e0fe1c6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c1863d'},body:JSON.stringify({sessionId:'c1863d',location:'useCaseQueue.js:loadQueue:success',message:'loadQueue success',data:{loadId,fetchedCount:Array.isArray(fetched)?fetched.length:'not-array',casesCount:cases.value.length},timestamp:Date.now(),hypothesisId:'A,E'})}).catch(()=>{});
+      // #endregion
     } catch (err) {
       console.error('Failed to load schedule', err)
-      cases.value = []
+      // #region agent log
+      fetch('http://127.0.0.1:7691/ingest/ceab04ba-7a84-4b90-b033-dde09e0fe1c6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c1863d'},body:JSON.stringify({sessionId:'c1863d',location:'useCaseQueue.js:loadQueue:error',message:'loadQueue error',data:{loadId,errMsg:err?.message??String(err),prevCount:cases.value.length,preserved:cases.value.length>0},timestamp:Date.now(),hypothesisId:'B',runId:'post-fix'})}).catch(()=>{});
+      // #endregion
+      if (cases.value.length === 0) {
+        cases.value = []
+      }
     }
   }
 

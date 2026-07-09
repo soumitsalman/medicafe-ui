@@ -32,6 +32,13 @@ async function loadCases() {
 
 await loadCases()
 
+// #region agent log
+watch([cases, loading], ([c, isLoading]) => {
+  const q = queueCases(c)
+  fetch('http://127.0.0.1:7691/ingest/ceab04ba-7a84-4b90-b033-dde09e0fe1c6',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c1863d'},body:JSON.stringify({sessionId:'c1863d',location:'ScheduleQueueView.vue:watch',message:'cases/loading changed',data:{casesCount:c.length,queueCount:q.length,loading:isLoading,importMetaServer:import.meta.server,importMetaClient:import.meta.client},timestamp:Date.now(),hypothesisId:'C,D'})}).catch(()=>{})
+}, { immediate: true, deep: true })
+// #endregion
+
 const queue = computed(() => queueCases(cases.value))
 const canSend = computed(() => canSendToOffice(cases.value))
 const queueDateLabel = computed(() =>

@@ -72,11 +72,17 @@ export function formatDisplayDate(iso) {
 
 /** @param {Function} fn @param {number} ms */
 export function debounce(fn, ms) {
+  /** @type {ReturnType<typeof setTimeout>|undefined} */
   let timer
-  return (...args) => {
+  const debounced = (...args) => {
     clearTimeout(timer)
     timer = setTimeout(() => fn(...args), ms)
   }
+  debounced.cancel = () => {
+    clearTimeout(timer)
+    timer = undefined
+  }
+  return debounced
 }
 
 /** @param {string} dob YYYY-MM-DD */
