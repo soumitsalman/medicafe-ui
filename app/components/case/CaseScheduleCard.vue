@@ -7,7 +7,7 @@ const props = defineProps({
   caseItem: { type: Object, required: true }
 })
 
-const emit = defineEmits(['patch', 'cancel', 'undo', 'issue'])
+const emit = defineEmits(['update', 'mission', 'cancel', 'undo', 'issue'])
 
 const minutesInput = ref()
 const dxValue = ref('')
@@ -27,8 +27,8 @@ const isCancelled = computed(() => props.caseItem.status === 'cancelled')
 const isIssue = computed(() => isIssueStatus(props.caseItem.status))
 const statusDisplay = computed(() => statusDisplayFromCase(props.caseItem.status))
 
-const issueSubStateLabels = computed(() =>
-  (props.caseItem.subState ?? []).map(type => ISSUE_TYPE_LABELS[type] ?? type)
+const issueSubStatusLabels = computed(() =>
+  (props.caseItem.sub_status ?? []).map(type => ISSUE_TYPE_LABELS[type] ?? type)
 )
 
 const showCancel = computed(() =>
@@ -73,43 +73,43 @@ watch(
   { immediate: true, deep: true }
 )
 
-const debouncedPatch = debounce((fields) => {
-  emit('patch', props.caseItem.id, fields)
+const debouncedUpdate = debounce((fields) => {
+  emit('update', props.caseItem.case_id, fields)
 }, 600)
 
 function onMinutesChange(value) {
   if (value == null) {
-    debouncedPatch({ minutes: null })
+    debouncedUpdate({ minutes: null })
   } else {
-    debouncedPatch({ minutes: value })
+    debouncedUpdate({ minutes: value })
   }
 }
 
 function onDxChange(value) {
   dxValue.value = value
-  debouncedPatch({ dx: value })
+  debouncedUpdate({ dx: value })
 }
 
-function onMissionToggle() {
-  missionChecked.value = !missionChecked.value
-  debouncedPatch({ mission: missionChecked.value })
+function onMissionToggle(checked) {
+  missionChecked.value = checked
+  emit('mission', props.caseItem.case_id, checked)
 }
 
 function onNoteChange(value) {
-  debouncedPatch({ note: value ?? '' })
+  debouncedUpdate({ note: value ?? '' })
 }
 
 function onClearNote() {
   noteInput.value = ''
-  debouncedPatch({ note: '' })
+  debouncedUpdate({ note: '' })
 }
 
 function onCancel() {
-  emit('cancel', props.caseItem.id)
+  emit('cancel', props.caseItem.case_id)
 }
 
 function onUndo() {
-  emit('undo', props.caseItem.id)
+  emit('undo', props.caseItem.case_id)
 }
 
 function onIssueClick() {
@@ -117,7 +117,7 @@ function onIssueClick() {
 }
 
 function onIssueSubmit(payload) {
-  emit('issue', props.caseItem.id, payload)
+  emit('issue', props.caseItem.case_id, payload)
 }
 </script>
 
@@ -135,16 +135,19 @@ function onIssueSubmit(payload) {
         :class="statusDisplay.textClass"
       />
       <UBadge
-        :label="caseItem.patientId"
+        :label="caseItem.patient_id"
         color="neutral"
         variant="subtle"
         class="shrink-0"
       />
-      <span class="min-w-0 truncate text-headline-md">
-        {{ caseItem.name }}
+      <span
+        class="min-w-0 truncate text-headline-md"
+        :class="statusDisplay.textClass"
+      >
+        {{ caseItem.patient_name }}
       </span>
       <span class="shrink-0 text-sm text-muted">
-        {{ formatDobWithAge(caseItem.dob, caseItem.date) }}
+        {{ formatDobWithAge(caseItem.patient_dob, caseItem.service_date) }}
       </span>
       <UInputNumber
         v-model.optional="minutesInput"
@@ -177,11 +180,11 @@ function onIssueSubmit(payload) {
     </div>
 
     <div
-      v-if="isIssue && issueSubStateLabels.length"
+      v-if="isIssue && issueSubStatusLabels.length"
       class="flex w-full flex-wrap gap-1"
     >
       <UBadge
-        v-for="label in issueSubStateLabels"
+        v-for="label in issueSubStatusLabels"
         :key="label"
         :label="label"
         color="warning"
@@ -260,7 +263,7 @@ function onIssueSubmit(payload) {
 
   <CaseIssueModal
     v-model:open="issueModalOpen"
-    :initial-sub-state="caseItem.subState ?? []"
+    :initial-sub-status="caseItem.sub_status ?? []"
     :initial-note="caseItem.note ?? ''"
     @submit="onIssueSubmit"
   />

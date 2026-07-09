@@ -1,4 +1,4 @@
-"""Load API test fixtures derived from app/mock data."""
+"""Load API test fixtures from api/tests/."""
 
 from __future__ import annotations
 

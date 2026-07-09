@@ -1,49 +1,47 @@
+import { apiFetchOptions } from '~/utils/apiFetch'
 import {
-  mockGetCases,
-  mockPatchCase,
-  mockCancelCase,
-  mockUndoCase,
-  mockReportIssue,
-  mockSendToOffice,
-  mockResetStore
-} from '~/mock/store'
+  sendSummaryFromResponse,
+  serializeCasesForBillables
+} from '~/utils/caseSelectors'
+
+/** @typedef {import('~/types/case').CaseInfo} CaseInfo */
 
 export function useCaseApi() {
+  const config = useRuntimeConfig()
+
   async function getCases() {
-    return mockGetCases()
+    /** @type {CaseInfo[]} */
+    const data = await $fetch(
+      `${config.public.apiBase}/cases/schedules`,
+      apiFetchOptions(config.public.apiKey)
+    )
+    return data.map(c => ({
+      ...c,
+      mission: false,
+      sub_status: c.sub_status ?? [],
+      note: c.note ?? ''
+    }))
   }
 
-  async function patchCase(caseId, fields) {
-    return mockPatchCase(caseId, fields)
-  }
+  /**
+   * @param {CaseInfo[]} cases
+   */
+  async function sendToOffice(cases) {
+    const payload = serializeCasesForBillables(cases)
 
-  async function cancelCase(caseId) {
-    return mockCancelCase(caseId)
-  }
-
-  async function undoCase(caseId) {
-    return mockUndoCase(caseId)
-  }
-
-  async function reportIssue(caseId, payload) {
-    return mockReportIssue(caseId, payload)
-  }
-
-  async function sendToOffice() {
-    return mockSendToOffice()
-  }
-
-  async function resetStore() {
-    return mockResetStore()
+    const response = await $fetch(`${config.public.apiBase}/cases/billables`, {
+      method: 'POST',
+      body: payload,
+      ...apiFetchOptions(config.public.apiKey)
+    })
+    return {
+      payload,
+      summary: sendSummaryFromResponse(cases, response)
+    }
   }
 
   return {
     getCases,
-    patchCase,
-    cancelCase,
-    undoCase,
-    reportIssue,
-    sendToOffice,
-    resetStore
+    sendToOffice
   }
 }

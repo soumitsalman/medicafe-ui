@@ -2,10 +2,18 @@
 import { queueCases, canSendToOffice } from '~/utils/caseSelectors'
 import { formatMaxShiftDate } from '~/utils/duration'
 
-const { getCases, patchCase, cancelCase, undoCase, reportIssue, sendToOffice } = useCaseApi()
+const {
+  cases,
+  loadQueue,
+  updateCase,
+  setMission,
+  cancelCase,
+  undoCase,
+  reportIssue,
+  sendToOffice
+} = useCaseQueue()
 
 const loading = ref(true)
-const cases = ref([])
 const summaryOpen = ref(false)
 const sendSummary = ref({
   billableCount: 0,
@@ -18,7 +26,7 @@ const sendSummary = ref({
 
 async function loadCases() {
   loading.value = true
-  cases.value = await getCases()
+  await loadQueue()
   loading.value = false
 }
 
@@ -27,35 +35,39 @@ await loadCases()
 const queue = computed(() => queueCases(cases.value))
 const canSend = computed(() => canSendToOffice(cases.value))
 const queueDateLabel = computed(() =>
-  formatMaxShiftDate(queue.value.map(c => c.date))
+  formatMaxShiftDate(queue.value.map(c => c.service_date))
 )
 
-async function onPatch(caseId, fields) {
-  await patchCase(caseId, fields)
-  cases.value = await getCases()
+function onUpdate(caseId, fields) {
+  updateCase(caseId, fields)
 }
 
-async function onCancel(caseId) {
-  await cancelCase(caseId)
-  cases.value = await getCases()
+function onMission(caseId, checked) {
+  setMission(caseId, checked)
 }
 
-async function onUndo(caseId) {
-  await undoCase(caseId)
-  cases.value = await getCases()
+function onCancel(caseId) {
+  cancelCase(caseId)
 }
 
-async function onIssue(caseId, payload) {
-  await reportIssue(caseId, payload)
-  cases.value = await getCases()
+function onUndo(caseId) {
+  undoCase(caseId)
+}
+
+function onIssue(caseId, payload) {
+  reportIssue(caseId, payload)
 }
 
 async function onSendToOffice() {
   if (!canSend.value) return
-  const result = await sendToOffice()
-  sendSummary.value = result.summary
-  summaryOpen.value = true
-  cases.value = await getCases()
+  try {
+    const result = await sendToOffice()
+    sendSummary.value = result.summary
+    summaryOpen.value = true
+    await loadCases()
+  } catch (err) {
+    console.error('Send to office failed', err)
+  }
 }
 </script>
 
@@ -83,9 +95,10 @@ async function onSendToOffice() {
       <div class="space-y-4">
         <CaseScheduleCard
           v-for="c in queue"
-          :key="c.id"
+          :key="c.case_id"
           :case-item="c"
-          @patch="onPatch"
+          @update="onUpdate"
+          @mission="onMission"
           @cancel="onCancel"
           @undo="onUndo"
           @issue="onIssue"
@@ -105,7 +118,7 @@ async function onSendToOffice() {
         </p>
       </div>
     </template>
-    
+
     <div
       v-if="queue.length"
       class="mt-4 flex justify-center"
@@ -120,7 +133,6 @@ async function onSendToOffice() {
         @click="onSendToOffice"
       />
     </div>
-    
 
     <SendSummaryModal
       v-model:open="summaryOpen"

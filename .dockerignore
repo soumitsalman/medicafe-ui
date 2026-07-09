@@ -1,0 +1,34 @@
+# API (separate image)
+api/
+
+# Build outputs and dependencies
+node_modules
+.pnpm-store
+.output
+.nuxt
+.nitro
+.cache
+dist
+
+# Python / misc
+.venv
+__pycache__
+.pytest_cache
+.data
+services/
+
+# VCS and IDE
+.git
+.github
+.cursor
+.idea
+.fleet
+.DS_Store
+
+# Local env (inject at build/run instead)
+.env
+.env.*
+
+# Logs
+*.log
+logs

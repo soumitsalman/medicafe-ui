@@ -7,18 +7,21 @@ const props = defineProps({
 
 const statusLabel = computed(() => {
   if (props.caseItem.status === 'cancelled') return 'Cancelled'
-  if (props.caseItem.status === 'completed' && props.caseItem.missionCharity) return 'Completed — Charity/Mission'
-  if (props.caseItem.status === 'completed') return 'Completed'
+  if (props.caseItem.status === 'mission') return 'Mission'
+  if (props.caseItem.status === 'billable') return 'Billable'
+  if (props.caseItem.status === 'issue') return 'Issue'
   return props.caseItem.status
 })
 
 const statusColor = computed(() => {
   if (props.caseItem.status === 'cancelled') return 'error'
+  if (props.caseItem.status === 'mission') return 'secondary'
+  if (props.caseItem.status === 'issue') return 'warning'
   return 'primary'
 })
 
-const durationDisplay = computed(() => {
-  const mins = props.caseItem.durationMinutes
+const minutesDisplay = computed(() => {
+  const mins = props.caseItem.minutes
   if (mins == null || mins === 0) return '0 min'
   return `${mins} min`
 })
@@ -36,15 +39,22 @@ const durationDisplay = computed(() => {
     </div>
 
     <div class="mt-2 flex w-full items-center justify-between">
-      <span class="min-w-0 flex-1 truncate text-headline-md text-highlighted">{{ caseItem.patient.fullName }}</span>
-      <span class="shrink-0 text-sm text-muted">{{ formatDob(caseItem.patient.dateOfBirth) }} ({{ caseItem.patient.ageYears }}y)</span>
+      <span class="min-w-0 flex-1 truncate text-headline-md text-highlighted">{{ caseItem.patient?.fullName ?? caseItem.patient_name }}</span>
+      <span class="shrink-0 text-sm text-muted">
+        <template v-if="caseItem.patient">
+          {{ formatDob(caseItem.patient.dateOfBirth) }} ({{ caseItem.patient.ageYears }}y)
+        </template>
+        <template v-else-if="caseItem.patient_dob">
+          {{ formatDob(caseItem.patient_dob) }}
+        </template>
+      </span>
     </div>
 
     <div class="mt-2 flex w-full items-center justify-between">
       <div class="flex items-center gap-2">
-        <span class="min-w-0 flex-1 truncate text-sm text-muted">{{ caseItem.diagnosis }}</span>
+        <span class="min-w-0 flex-1 truncate text-sm text-muted">{{ caseItem.diagnosis ?? caseItem.dx }}</span>
         <UBadge
-          v-for="tag in caseItem.diagnosisModifierTags"
+          v-for="tag in (caseItem.diagnosisModifierTags ?? [])"
           :key="tag"
           :label="tag"
           color="secondary"
@@ -52,7 +62,7 @@ const durationDisplay = computed(() => {
           class="rounded px-1.5 py-0.5 text-xs"
         />
       </div>
-      <span class="shrink-0 text-sm font-medium text-highlighted">{{ durationDisplay }}</span>
+      <span class="shrink-0 text-sm font-medium text-highlighted">{{ minutesDisplay }}</span>
     </div>
   </UCard>
 </template>

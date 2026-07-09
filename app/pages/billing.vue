@@ -4,12 +4,21 @@ definePageMeta({ layout: 'default' })
 const { getBillingSummaries } = useBillingApi()
 
 const loading = ref(true)
+const loadError = ref(false)
 const summaries = ref([])
 
 async function loadSummaries() {
   loading.value = true
-  summaries.value = await getBillingSummaries()
-  loading.value = false
+  loadError.value = false
+  try {
+    summaries.value = await getBillingSummaries()
+  } catch (err) {
+    console.error('Failed to load billing', err)
+    summaries.value = []
+    loadError.value = true
+  } finally {
+    loading.value = false
+  }
 }
 
 await loadSummaries()
@@ -37,7 +46,20 @@ await loadSummaries()
 
     <template v-else>
       <div
-        v-if="!summaries.length"
+        v-if="loadError"
+        class="mt-16 flex flex-col items-center justify-center text-center opacity-60"
+      >
+        <UIcon
+          name="i-lucide-cloud-off"
+          class="mb-4 size-16 opacity-40"
+        />
+        <p class="max-w-xs text-base text-muted">
+          Could not load billing history.
+        </p>
+      </div>
+
+      <div
+        v-else-if="!summaries.length"
         class="mt-16 flex flex-col items-center justify-center text-center opacity-60"
       >
         <UIcon
@@ -49,7 +71,10 @@ await loadSummaries()
         </p>
       </div>
 
-      <div class="space-y-4">
+      <div
+        v-else
+        class="space-y-4"
+      >
         <BillingSummaryCard
           v-for="s in summaries"
           :key="s.date"

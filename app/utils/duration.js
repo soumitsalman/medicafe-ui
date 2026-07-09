@@ -1,3 +1,5 @@
+import { differenceInYears, format, max, parse } from 'date-fns'
+
 /** @param {number|null|undefined} totalMinutes */
 export function splitDuration(totalMinutes) {
   if (totalMinutes == null || totalMinutes < 0) {
@@ -77,8 +79,6 @@ export function debounce(fn, ms) {
   }
 }
 
-import { differenceInYears, format, max, parse } from 'date-fns'
-
 /** @param {string} dob YYYY-MM-DD */
 export function formatDob(dob) {
   return format(parse(dob, 'yyyy-MM-dd', new Date()), 'MM/dd/yyyy')
@@ -86,34 +86,24 @@ export function formatDob(dob) {
 
 /**
  * @param {string} dob YYYY-MM-DD
- * @param {string} shiftDate MM-DD-YYYY
+ * @param {string} serviceDate YYYY-MM-DD
  */
-export function formatDobWithAge(dob, shiftDate) {
+export function formatDobWithAge(dob, serviceDate) {
   const birth = parse(dob, 'yyyy-MM-dd', new Date())
-  const ref = parse(shiftDate, 'MM-dd-yyyy', new Date())
+  const ref = parse(serviceDate, 'yyyy-MM-dd', new Date())
   const age = differenceInYears(ref, birth)
   return `${format(birth, 'MM/dd/yyyy')} (${age}y)`
 }
 
-/** @param {string} shiftDate MM-DD-YYYY */
-export function formatShiftDateLong(shiftDate) {
-  const d = parse(shiftDate, 'MM-dd-yyyy', new Date())
+/** @param {string} serviceDate YYYY-MM-DD */
+export function formatShiftDateLong(serviceDate) {
+  const d = parse(serviceDate, 'yyyy-MM-dd', new Date())
   return format(d, 'EEEE, MMMM do, yyyy')
 }
 
-/** @param {string[]} shiftDates MM-DD-YYYY */
-export function formatMaxShiftDate(shiftDates) {
-  if (!shiftDates.length) return null
-  const parsed = shiftDates.map(d => parse(d, 'MM-dd-yyyy', new Date()))
+/** @param {string[]} serviceDates YYYY-MM-DD */
+export function formatMaxShiftDate(serviceDates) {
+  if (!serviceDates.length) return null
+  const parsed = serviceDates.map(d => parse(d, 'yyyy-MM-dd', new Date()))
   return format(max(parsed), 'EEEE, MMMM do, yyyy')
-}
-
-/** Simulate network latency for mock API */
-export function mockDelay(ms = 200) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-
-/** Deep-clone for returning fresh DTOs */
-export function clone(value) {
-  return JSON.parse(JSON.stringify(value))
 }

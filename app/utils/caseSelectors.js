@@ -1,8 +1,7 @@
-/** @typedef {import('~/types/case').CaseDto} CaseDto */
+/** @typedef {import('~/types/case').CaseInfo} CaseInfo */
 /** @typedef {import('~/types/case').CaseStatus} CaseStatus */
-/** @typedef {import('~/types/case').SendingPayloadDto} SendingPayloadDto */
 
-const TERMINAL = new Set(['completed', 'mission', 'cancelled', 'issue'])
+const TERMINAL = new Set(['billable', 'mission', 'cancelled', 'issue'])
 
 /**
  * @param {CaseStatus} status
@@ -28,21 +27,21 @@ export function statusFromCaseState({ minutes, mission, issueLocked = false, cur
   if (issueLocked && currentStatus === 'issue') {
     return 'issue'
   }
-  if (!Number.isInteger(minutes) || minutes < 0) return 'pending'
   if (minutes === 0) return 'cancelled'
+  if (!Number.isInteger(minutes) || minutes < 0) return 'scheduled'
   if (mission) return 'mission'
-  return 'completed'
+  return 'billable'
 }
 
 /**
- * @param {CaseDto} c
+ * @param {CaseInfo} c
  */
 export function applyStatusToCase(c) {
   if (isIssueStatus(c.status)) return
   c.status = statusFromCaseState({
     minutes: c.minutes,
     mission: c.mission,
-    issueLocked: true,
+    issueLocked: isIssueStatus(c.status),
     currentStatus: c.status
   })
 }
@@ -57,7 +56,7 @@ export function applyStatusToCase(c) {
  */
 export function statusDisplayFromCase(status) {
   switch (status) {
-    case 'completed':
+    case 'billable':
       return {
         icon: 'i-lucide-check-circle-2',
         textClass: 'text-primary',
@@ -96,15 +95,15 @@ export function statusDisplayFromCase(status) {
 }
 
 /**
- * @param {CaseDto[]} cases
- * @returns {CaseDto[]}
+ * @param {CaseInfo[]} cases
+ * @returns {CaseInfo[]}
  */
 export function queueCases(cases) {
-  return [...cases].sort((a, b) => a.pos - b.pos)
+  return [...cases].sort((a, b) => a.case_pos - b.case_pos)
 }
 
 /**
- * @param {CaseDto[]} cases
+ * @param {CaseInfo[]} cases
  * @returns {boolean}
  */
 export function canSendToOffice(cases) {
@@ -113,24 +112,24 @@ export function canSendToOffice(cases) {
 }
 
 /**
- * @param {CaseDto[]} cases
+ * @param {CaseInfo[]} cases
  */
 function sumMinutes(cases) {
   return cases.reduce((sum, c) => sum + (c.minutes ?? 0), 0)
 }
 
 /**
- * @param {CaseDto[]} cases
+ * @param {CaseInfo[]} cases
  */
 export function sendSummary(cases) {
-  const completed = cases.filter(c => c.status === 'completed')
+  const billable = cases.filter(c => c.status === 'billable')
   const mission = cases.filter(c => c.status === 'mission')
   const cancelled = cases.filter(c => c.status === 'cancelled')
   const issues = cases.filter(c => c.status === 'issue')
 
   return {
-    billableCount: completed.length,
-    billableMinutes: sumMinutes(completed),
+    billableCount: billable.length,
+    billableMinutes: sumMinutes(billable),
     missionCount: mission.length,
     missionMinutes: sumMinutes(mission),
     cancelledCount: cancelled.length,
@@ -139,31 +138,35 @@ export function sendSummary(cases) {
 }
 
 /**
- * @param {CaseDto[]} cases
- * @returns {SendingPayloadDto}
+ * @param {CaseInfo[]} cases
+ * @param {import('~/types/case').BillableCasesSubmissionResponse} response
  */
-export function serializeCasesForSend(cases) {
-  const q = queueCases(cases)
-  const date = q[0]?.date ?? ''
+export function sendSummaryFromResponse(cases, response) {
+  const local = sendSummary(cases)
   return {
-    date,
-    rows: q.map((c) => {
-      /** @type {import('~/types/case').SendingRowDto} */
-      const row = {
-        patient_id: c.patientId,
-        status: /** @type {Exclude<CaseStatus, 'pending'>} */ (c.status),
-        minutes: c.minutes,
-        dx: c.dx,
-        cpt: c.cpt,
-        eye: c.eye,
-        note: c.note ?? ''
-      }
-      if (c.status === 'issue') {
-        row.sub_state = c.subState ?? []
-      }
-      return row
-    })
+    billableCount: response.billable.length,
+    billableMinutes: local.billableMinutes,
+    missionCount: response.mission.length,
+    missionMinutes: local.missionMinutes,
+    cancelledCount: response.cancelled.length,
+    issueCount: response.issues.length
   }
+}
+
+/**
+ * @param {CaseInfo[]} cases
+ * @returns {CaseInfo[]}
+ */
+export function serializeCasesForBillables(cases) {
+  return queueCases(cases).map((caseItem) => {
+    const payload = { ...caseItem }
+    delete payload.mission
+    return {
+      ...payload,
+      note: caseItem.note?.trim() ? caseItem.note : null,
+      sub_status: caseItem.sub_status?.length ? caseItem.sub_status : null
+    }
+  })
 }
 
 /** @deprecated Billing page retained but unused */
@@ -177,6 +180,6 @@ export function canConfirmBilling() {
 }
 
 /** @deprecated Billing page retained but unused */
-export function totalDurationMinutes() {
+export function totalMinutes() {
   return 0
 }

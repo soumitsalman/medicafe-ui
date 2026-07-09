@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 import os
 from fastapi import FastAPI
 from db import CasesDB
+from middleware import ApiKeyMiddleware
 from routers import cases_router
 
 @asynccontextmanager
@@ -17,6 +18,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.add_middleware(ApiKeyMiddleware)
 app.include_router(cases_router)
 
 @app.get("/health")

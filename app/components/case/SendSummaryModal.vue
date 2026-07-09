@@ -12,29 +12,41 @@ defineProps({
 <template>
   <UModal
     v-model:open="open"
-    title="Send complete"
-    description="Cases have been sent to the office."
+    icon="i-lucide-rocket"
+    title="Sent"
   >
     <template #body>
-      <div class="space-y-2 text-sm text-default">
-        <p v-if="summary.billableCount">
-          {{ summary.billableCount }} {{ summary.billableCount === 1 ? 'case' : 'cases' }} · {{ summary.billableMinutes }} billable minutes
-        </p>
-        <p v-if="summary.missionCount">
-          {{ summary.missionCount }} mission {{ summary.missionCount === 1 ? 'case' : 'cases' }} · {{ summary.missionMinutes }} non-billable minutes
-        </p>
-        <p v-if="summary.cancelledCount">
-          {{ summary.cancelledCount }} cancelled {{ summary.cancelledCount === 1 ? 'case' : 'cases' }}
-        </p>
-        <p v-if="summary.issueCount">
-          {{ summary.issueCount }} {{ summary.issueCount === 1 ? 'case' : 'cases' }} with issues
-        </p>
-        <p
+      <div class="flex flex-col gap-2 justify-center text-sm text-default">
+        <UBadge
+          v-if="summary.billableCount"
+          color="primary"
+        >
+          {{ summary.billableCount }} billable
+        </UBadge>
+        <UBadge
+          v-if="summary.missionCount"
+          color="secondary"
+        >
+          {{ summary.missionCount }} mission
+        </UBadge>
+        <UBadge
+          v-if="summary.cancelledCount"
+          color="danger"
+        >
+          {{ summary.cancelledCount }} cancelled
+        </UBadge>
+        <UBadge
+          v-if="summary.issueCount"
+          color="warning"
+        >
+          {{ summary.issueCount }} with issue
+        </UBadge>
+        <UBadge
           v-if="!summary.billableCount && !summary.missionCount && !summary.cancelledCount && !summary.issueCount"
           class="text-muted"
         >
           No cases were sent.
-        </p>
+        </UBadge>
       </div>
     </template>
 

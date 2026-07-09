@@ -19,7 +19,7 @@ class CaseInfoPayloadBase(BaseModel):
     minutes: int = Field(default=None, description="Procedure minutes (suggested on receive, required on document)")
     
     def model_dump(self, **kwargs) -> dict:
-        return super().model_dump(_DEFAULT_DUMP_KWARGS | kwargs)
+        return super().model_dump(**(_DEFAULT_DUMP_KWARGS | kwargs))
 
 class ScheduledCasesSubmissionPayload(BaseModel):
     class ScheduledCaseInfo(CaseInfoPayloadBase):

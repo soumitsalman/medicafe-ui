@@ -4,14 +4,14 @@
 const open = defineModel('open', { type: Boolean, default: false })
 
 const props = defineProps({
-  initialSubState: { type: Array, default: () => [] },
+  initialSubStatus: { type: Array, default: () => [] },
   initialNote: { type: String, default: '' }
 })
 
 const emit = defineEmits(['submit'])
 
 /** @type {import('vue').Ref<IssueType[]>} */
-const subState = ref([])
+const subStatus = ref([])
 const note = ref('')
 
 const issueOptions = [
@@ -19,11 +19,11 @@ const issueOptions = [
   { value: 'needs_review', label: 'Needs review' }
 ]
 
-const canSubmit = computed(() => subState.value.length > 0)
+const canSubmit = computed(() => subStatus.value.length > 0)
 
 watch(open, (isOpen) => {
   if (isOpen) {
-    subState.value = [...(props.initialSubState)]
+    subStatus.value = [...(props.initialSubStatus)]
     note.value = props.initialNote
   }
 })
@@ -35,7 +35,7 @@ function onCancel() {
 function onSubmit() {
   if (!canSubmit.value) return
   emit('submit', {
-    subState: [...subState.value],
+    sub_status: [...subStatus.value],
     note: note.value.trim()
   })
   open.value = false
@@ -50,7 +50,7 @@ function onSubmit() {
     <template #body>
       <div class="flex flex-col gap-4 w-full">
         <UCheckboxGroup
-          v-model="subState"
+          v-model="subStatus"
           :items="issueOptions"
           color="warning"
           variant="table"
