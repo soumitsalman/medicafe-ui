@@ -1,0 +1,129 @@
+<script setup>
+import { queueCases, canSendToOffice } from '~/utils/caseSelectors'
+import { formatMaxShiftDate } from '~/utils/duration'
+
+const { getCases, patchCase, cancelCase, undoCase, reportIssue, sendToOffice } = useCaseApi()
+
+const loading = ref(true)
+const cases = ref([])
+const summaryOpen = ref(false)
+const sendSummary = ref({
+  billableCount: 0,
+  billableMinutes: 0,
+  missionCount: 0,
+  missionMinutes: 0,
+  cancelledCount: 0,
+  issueCount: 0
+})
+
+async function loadCases() {
+  loading.value = true
+  cases.value = await getCases()
+  loading.value = false
+}
+
+await loadCases()
+
+const queue = computed(() => queueCases(cases.value))
+const canSend = computed(() => canSendToOffice(cases.value))
+const queueDateLabel = computed(() =>
+  formatMaxShiftDate(queue.value.map(c => c.date))
+)
+
+async function onPatch(caseId, fields) {
+  await patchCase(caseId, fields)
+  cases.value = await getCases()
+}
+
+async function onCancel(caseId) {
+  await cancelCase(caseId)
+  cases.value = await getCases()
+}
+
+async function onUndo(caseId) {
+  await undoCase(caseId)
+  cases.value = await getCases()
+}
+
+async function onIssue(caseId, payload) {
+  await reportIssue(caseId, payload)
+  cases.value = await getCases()
+}
+
+async function onSendToOffice() {
+  if (!canSend.value) return
+  const result = await sendToOffice()
+  sendSummary.value = result.summary
+  summaryOpen.value = true
+  cases.value = await getCases()
+}
+</script>
+
+<template>
+  <div>
+    <div class="mb-6">
+      <h1 class="text-headline-lg-mobile text-highlighted">
+        {{ queueDateLabel ?? 'Schedule' }}
+      </h1>
+      <p class="mt-1 text-sm text-muted">
+        {{ queue.length }} {{ queue.length === 1 ? 'case' : 'cases' }} in queue
+      </p>
+    </div>
+
+    <div
+      v-if="loading"
+      class="space-y-4"
+    >
+      <USkeleton class="h-32 w-full rounded-[16px]" />
+      <USkeleton class="h-32 w-full rounded-[16px]" />
+      <USkeleton class="h-32 w-full rounded-[16px]" />
+    </div>
+
+    <template v-else>
+      <div class="space-y-4">
+        <CaseScheduleCard
+          v-for="c in queue"
+          :key="c.id"
+          :case-item="c"
+          @patch="onPatch"
+          @cancel="onCancel"
+          @undo="onUndo"
+          @issue="onIssue"
+        />
+      </div>
+
+      <div
+        v-if="!queue.length"
+        class="mt-16 flex flex-col items-center justify-center text-center opacity-60"
+      >
+        <UIcon
+          name="i-lucide-check-circle"
+          class="mb-4 size-16 opacity-40"
+        />
+        <p class="max-w-xs text-base text-muted">
+          No cases in the queue.
+        </p>
+      </div>
+    </template>
+
+    <div
+      v-if="queue.length"
+      class="mt-8"
+    >
+      <UButton
+        label="Send to Office"
+        color="primary"
+        size="xl"
+        block
+        class="min-h-14 rounded-full font-medium"
+        :disabled="!canSend"
+        @click="onSendToOffice"
+      />
+    </div>
+
+    <SendSummaryModal
+      v-model:open="summaryOpen"
+      :summary="sendSummary"
+    />
+  </div>
+</template>

@@ -1,0 +1,61 @@
+{
+  "date": "01-20-2026",
+  "rows": [
+    {
+      "patient_id": "12345",
+      "status": "completed",
+      "minutes": 18,
+      "dx": "H25.812",
+      "cpt": "00142",
+      "eye": "LEFT",
+      "note": ""
+    },
+    {
+      "patient_id": "67890",
+      "status": "mission",
+      "minutes": 20,
+      "dx": "H25.811",
+      "cpt": "00142",
+      "eye": "RIGHT",
+      "note": ""
+    },
+    {
+      "patient_id": "11223",
+      "status": "cancelled",
+      "minutes": 0,
+      "dx": "H25.10",
+      "cpt": "00140",
+      "eye": "LEFT",
+      "note": ""
+    },
+    {
+      "patient_id": "33445",
+      "status": "completed",
+      "minutes": 12,
+      "dx": "H25.11",
+      "cpt": "00140",
+      "eye": "RIGHT",
+      "note": ""
+    },
+    {
+      "patient_id": "55667",
+      "status": "issue",
+      "sub_state": ["identity_issue"],
+      "minutes": 15,
+      "dx": "H26.9",
+      "cpt": "00140",
+      "eye": "LEFT",
+      "note": "MRN mismatch on wristband"
+    },
+    {
+      "patient_id": "77889",
+      "status": "issue",
+      "sub_state": ["needs_review"],
+      "minutes": 25,
+      "dx": "H25.812",
+      "cpt": "00142",
+      "eye": "LEFT",
+      "note": "DX code may need update"
+    }
+  ]
+}
