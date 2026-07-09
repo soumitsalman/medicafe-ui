@@ -105,21 +105,22 @@ async function onSendToOffice() {
         </p>
       </div>
     </template>
-
+    
     <div
       v-if="queue.length"
-      class="mt-8"
+      class="mt-4 flex justify-center"
     >
       <UButton
+        icon="i-lucide-send"
         label="Send to Office"
         color="primary"
         size="xl"
-        block
-        class="min-h-14 rounded-full font-medium"
+        class="rounded-full"
         :disabled="!canSend"
         @click="onSendToOffice"
       />
     </div>
+    
 
     <SendSummaryModal
       v-model:open="summaryOpen"

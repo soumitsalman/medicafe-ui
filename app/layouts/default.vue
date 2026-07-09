@@ -1,8 +1,9 @@
 <template>
-  <div class="min-h-dvh bg-default text-default">
+  <div class="flex min-h-dvh flex-col bg-default text-default">
     <AppTopNav />
-    <AppPageContainer>
+    <AppPageContainer class="flex-1">
       <slot />
     </AppPageContainer>
+    <AppBrandFooter />
   </div>
 </template>

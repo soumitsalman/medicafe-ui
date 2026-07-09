@@ -57,6 +57,11 @@ const cardBorderClass = computed(() => {
   }
 })
 
+const cardUi = {
+  body: 'px-3 py-2 flex flex-col gap-1',
+  footer: 'px-3 py-2'
+}
+
 watch(
   () => props.caseItem,
   (c) => {
@@ -120,47 +125,42 @@ function onIssueSubmit(payload) {
   <UCard
     class="rounded-2xl bg-default pill-shadow"
     :class="cardBorderClass"
+    :ui="cardUi"
   >
-    <div class="flex w-full items-center justify-between gap-2">
-      <div class="flex min-w-0 flex-1 items-center gap-2">
-        
-        <UIcon
-          v-if="statusDisplay.icon"
-          :name="statusDisplay.icon"
-          class="shrink-0 size-5"
-          :class="statusDisplay.textClass"
-        />
-        <UBadge
-          :label="caseItem.patientId"
-          color="neutral"
-          variant="subtle"
-          class="shrink-0"
-        />
-        <span class="min-w-0 truncate text-headline-md">
-          {{ caseItem.name }}
-        </span>
-        <span class="shrink-0 text-sm text-muted">
-          {{ formatDobWithAge(caseItem.dob, caseItem.date) }}
-        </span>
-      </div>
-      <div class="flex shrink-0 items-center gap-2">
-        <UInputNumber
-          v-model.optional="minutesInput"
-          placeholder="Min"
-          :min="0"
-          :max="59"          
-          class="w-32"
-          @update:model-value="onMinutesChange"
-        />
-        <span class="text-sm text-muted">mins</span>
-      </div>
+    <div class="flex w-full items-center gap-1">
+      <UIcon
+        v-if="statusDisplay.icon"
+        :name="statusDisplay.icon"
+        class="shrink-0 size-5"
+        :class="statusDisplay.textClass"
+      />
+      <UBadge
+        :label="caseItem.patientId"
+        color="neutral"
+        variant="subtle"
+        class="shrink-0"
+      />
+      <span class="min-w-0 truncate text-headline-md">
+        {{ caseItem.name }}
+      </span>
+      <span class="shrink-0 text-sm text-muted">
+        {{ formatDobWithAge(caseItem.dob, caseItem.date) }}
+      </span>
+      <UInputNumber
+        v-model.optional="minutesInput"
+        placeholder="Min"
+        :min="0"
+        :max="59"
+        class="ml-auto w-32 shrink-0"
+        @update:model-value="onMinutesChange"
+      />
+      <span class="shrink-0 text-sm text-muted">mins</span>
     </div>
 
-    <div class="mt-3 flex w-full items-center gap-2">
+    <div class="flex w-full items-center gap-1">
       <USelect
         :model-value="dxValue"
         :items="dxItems"
-        
         class="w-32"
         @update:model-value="onDxChange"
       />
@@ -178,7 +178,7 @@ function onIssueSubmit(payload) {
 
     <div
       v-if="isIssue && issueSubStateLabels.length"
-      class="mt-2 flex w-full flex-wrap gap-2"
+      class="flex w-full flex-wrap gap-1"
     >
       <UBadge
         v-for="label in issueSubStateLabels"
@@ -191,29 +191,31 @@ function onIssueSubmit(payload) {
 
     <div
       v-if="showNoteRow"
-      class="mt-3 flex w-full items-start gap-2"
+      class="flex w-full items-start gap-1"
     >
-      <UTextarea
+      <UInput
         v-model="noteInput"
         placeholder="Note"
-        :rows="2"
-        autoresize
         class="flex-1"
+        :ui="{ trailing: 'pe-1' }"
         @update:model-value="onNoteChange"
-      />
-      <UButton
-        icon="i-lucide-x"
-        color="neutral"
-        variant="ghost"
-        
-        aria-label="Clear note"
-        @click="onClearNote"
-      />
+      >
+        <template #trailing>
+          <UButton
+            color="neutral"
+            variant="link"
+            size="sm"
+            icon="i-lucide-x"
+            aria-label="Clear note"
+            @click="onClearNote"
+          />
+        </template>
+      </UInput>
     </div>
 
-    <div class="mt-3 border-t border-default pt-3">
+    <template #footer>
       <div
-        class="flex w-full items-center"
+        class="flex w-full items-center gap-1"
         :class="showMission ? 'justify-between' : 'justify-end'"
       >
         <UCheckbox
@@ -251,16 +253,15 @@ function onIssueSubmit(payload) {
             class="rounded-full"
             @click="onUndo"
           />
-          
         </div>
       </div>
-    </div>
-
-    <CaseIssueModal
-      v-model:open="issueModalOpen"
-      :initial-sub-state="caseItem.subState ?? []"
-      :initial-note="caseItem.note ?? ''"
-      @submit="onIssueSubmit"
-    />
+    </template>
   </UCard>
+
+  <CaseIssueModal
+    v-model:open="issueModalOpen"
+    :initial-sub-state="caseItem.subState ?? []"
+    :initial-note="caseItem.note ?? ''"
+    @submit="onIssueSubmit"
+  />
 </template>

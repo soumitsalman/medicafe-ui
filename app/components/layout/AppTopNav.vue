@@ -2,7 +2,7 @@
 const route = useRoute()
 
 const tabs = [
-  { id: 'home', label: 'Home', icon: 'i-lucide-home', to: '/' },
+  { id: 'home', label: 'Home', icon: 'i-lucide-calendar-days', to: '/' },
   { id: 'settings', label: 'Settings', icon: 'i-lucide-settings', to: '/settings' }
 ]
 
@@ -14,7 +14,7 @@ const activeTab = computed(() => {
 
 <template>
   <nav class="sticky top-0 z-40 w-full border-b border-default bg-default">
-    <div class="mx-auto flex h-14 max-w-[1024px] items-center justify-around px-4">
+    <div class="mx-auto flex h-14 w-full max-w-[1024px] items-center justify-around px-3 sm:px-4">
       <NuxtLink
         v-for="tab in tabs"
         :key="tab.id"
@@ -35,7 +35,7 @@ const activeTab = computed(() => {
         </span>
         <span
           v-if="tab.label"
-          class="text-label-caps"
+          class="hidden text-label-caps md:block"
         >{{ tab.label }}</span>
       </NuxtLink>
     </div>
