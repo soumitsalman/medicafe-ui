@@ -16,7 +16,7 @@ def test_post_schedules_minimal(client, schedule_receiving_minimal):
     assert response.status_code == 200
     body = response.json()
     assert len(body) == 1
-    assert body[0] == "31388fc7-1bde-57ce-8428-01f6a446b990"
+    assert body[0] == "0d9153e1-3a55-599a-84cb-d91dd9227a71"
 
 
 def test_post_schedules_pending_only(client, schedule_receiving_pending_only):
@@ -52,6 +52,9 @@ def test_get_schedules_after_post(client, schedule_receiving):
     assert len(cases) == 8
     assert all(case["status"] == "scheduled" for case in cases)
     assert {case["case_id"] for case in cases} == set(post.json())
+    by_patient = {c["patient_id"]: c for c in cases}
+    assert by_patient["12345"]["patient_name"] == "LAST, FIRST"
+    assert by_patient["12345"]["patient_dob"] == "1950-01-01"
 
 
 def test_get_schedules_empty(client):
@@ -80,7 +83,7 @@ def test_patch_schedules_minimal(
 
     response = client.patch("/cases/schedules", json=schedule_updating_minimal)
     assert response.status_code == 200
-    assert response.json() == ["31388fc7-1bde-57ce-8428-01f6a446b990"]
+    assert response.json() == ["0d9153e1-3a55-599a-84cb-d91dd9227a71"]
 
     case = client.get("/cases/schedules").json()[0]
     assert case["cpt"] == "00142"

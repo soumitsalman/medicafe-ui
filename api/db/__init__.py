@@ -1,4 +1,4 @@
-from .schemas import CaseInfo, PatientInfo, IssueType, CaseStatus
+from .schemas import CaseView, CaseInfo, PatientInfo, IssueType, CaseStatus
 from .storage import CasesDB
 
 __all__ = [
@@ -7,4 +7,5 @@ __all__ = [
     "CaseInfo",
     "PatientInfo",
     "CasesDB",
+    "CaseView",
 ]

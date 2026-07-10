@@ -18,7 +18,7 @@ def test_post_billables_minimal(client, schedule_receiving_minimal, billable_sen
 
     response = client.post("/cases/billables", json=billable_sending_minimal)
     assert response.status_code == 200
-    assert response.json() == ["31388fc7-1bde-57ce-8428-01f6a446b990"]
+    assert response.json() == ["0d9153e1-3a55-599a-84cb-d91dd9227a71"]
 
 
 def test_get_billables_after_post(client, schedule_receiving, billable_sending):

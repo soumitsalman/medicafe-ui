@@ -10,7 +10,7 @@ from .models import (
     ScheduleInsertsPayload,
     CaseUpdatesPayloads,
 )
-from db import CaseInfo, CasesDB, PatientInfo
+from db import CaseInfo, CasesDB, PatientInfo, CaseView
 
 router = APIRouter(prefix="/cases", tags=["cases"])
 
@@ -47,7 +47,14 @@ def _parse_position(value: Optional[str]) -> Optional[int]:
     return None
 
 
-def _require_case_keys(patient_id: Optional[str], service_date: Optional[date]) -> None:
+def _require_case_keys(
+    *,
+    case_id: Optional[UUID] = None,
+    patient_id: Optional[str] = None,
+    service_date: Optional[date] = None,
+) -> None:
+    if case_id is not None:
+        return
     if not patient_id:
         raise HTTPException(status_code=422, detail="patient_id cannot be null")
     if service_date is None:
@@ -63,7 +70,7 @@ def _split_case_inserts(
         service_date = _parse_mdy(date_key)
         for raw_patient_id, incoming in day.current.patients.items():
             patient_id = _null_str(raw_patient_id)
-            _require_case_keys(patient_id, service_date)
+            _require_case_keys(patient_id=patient_id, service_date=service_date)
             cases.append(
                 CaseInfo(
                     facility_id=DEFAULT_FACILITY_ID,
@@ -95,7 +102,7 @@ def _split_case_updates(
     for row in payload.rows.values():
         patient_id = _null_str(row.patient_id)
         service_date = _parse_mdy(row.dos)
-        _require_case_keys(patient_id, service_date)
+        _require_case_keys(patient_id=patient_id, service_date=service_date)
         patient_name = _null_str(row.patient_display_name)
         patient_dob = _parse_mdy(row.patient_dob)
         case = CaseInfo(
@@ -107,7 +114,6 @@ def _split_case_updates(
             cpt=_null_str(row.cpt),
             case_position=row.docx_position,
         )
-        case.case_id = CasesDB._create_case_id(case)
         cases.append(case)
         if patient_name or patient_dob:
             patients.append(
@@ -124,25 +130,33 @@ def _split_case_updates(
 @router.post("/schedules")
 async def post_schedules(cases_db: CaseDBDependency, payload: ScheduleInsertsPayload) -> list[UUID]:
     cases, patients = _split_case_inserts(payload)
-    # DuckDB connection is not safe for concurrent writers on the same handle.
-    await asyncio.to_thread(cases_db.store_patients, patients)
-    return await asyncio.to_thread(cases_db.store_cases, cases)
+    _, case_ids = await asyncio.gather(
+        asyncio.to_thread(cases_db.insert_patients, patients),
+        asyncio.to_thread(cases_db.insert_cases, cases),
+    )
+    return case_ids
 
 
 @router.patch("/schedules")
 async def patch_schedules(cases_db: CaseDBDependency, payload: CaseUpdatesPayloads) -> list[UUID]:
     cases, patients = _split_case_updates(payload)
-    if patients:
-        await asyncio.to_thread(cases_db.store_patients, patients)
-    return await asyncio.to_thread(cases_db.store_cases, cases)
+    await asyncio.gather(
+        asyncio.to_thread(cases_db.update_patients, patients),
+        asyncio.to_thread(cases_db.update_cases, cases),
+    )
+    _, case_ids = await asyncio.gather(
+        asyncio.to_thread(cases_db.insert_patients, patients),
+        asyncio.to_thread(cases_db.insert_cases, cases),
+    )
+    return case_ids
 
 
 @router.get("/schedules")
-async def get_schedules(cases_db: CaseDBDependency, service_date: date = Query(default=None)) -> list[CaseInfo]:
+async def get_schedules(cases_db: CaseDBDependency, service_date: date = Query(default=None)) -> list[CaseView]:
     items = await asyncio.to_thread(
         cases_db.query_cases,
+        service_date=service_date,
         status=["scheduled"],
-        service_date=service_date
     )
     items.sort(key=lambda x: x.case_position or 0)
     return items
@@ -151,14 +165,14 @@ async def get_schedules(cases_db: CaseDBDependency, service_date: date = Query(d
 @router.post("/billables")
 async def post_billables(payload: list[CaseInfo], cases_db: CaseDBDependency) -> list[UUID]:
     for case in payload:
-        _require_case_keys(case.patient_id, case.service_date)
-    return await asyncio.to_thread(cases_db.store_cases, payload)
+        _require_case_keys(case_id=case.case_id, patient_id=case.patient_id, service_date=case.service_date)
+    return await asyncio.to_thread(cases_db.update_cases, payload)
 
 
 @router.get("/billables")
-async def get_billables(cases_db: CaseDBDependency, service_date: date = Query(default=None)) -> list[CaseInfo]:
+async def get_billables(cases_db: CaseDBDependency, service_date: date = Query(default=None)) -> list[CaseView]:
     return await asyncio.to_thread(
         cases_db.query_cases,
+        service_date=service_date,
         status=["billable", "mission", "cancelled", "issue"],
-        service_date=service_date
     )

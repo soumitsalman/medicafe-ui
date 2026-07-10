@@ -26,7 +26,6 @@ class CaseInfo(BaseModel):
     ts: Optional[datetime] = Field(default=None, description="Timestamp of entry or update")
 
     # future extension fields
-    facility_id: Optional[UUID] = Field(default=None, description="Facility ID")
     provider_id: Optional[UUID] = Field(default=None, description="Provider ID")    
     service_time: Optional[time] = Field(default=None, description="Service time (HH:MM)")
 
@@ -34,7 +33,13 @@ class PatientInfo(BaseModel):
     patient_id: Optional[str] = Field(default=None, description="Patient MRN / identifier")
     patient_name: Optional[str] = Field(default=None, description="Patient name (LAST, FIRST)")
     patient_dob: Optional[date] = Field(default=None, description="Date of birth (YYYY-MM-DD)")
-    facility_id: Optional[UUID] = Field(default=None, description="Facility ID")
 
     # internal maintainence fields
     ts: Optional[datetime] = Field(default=None, description="Timestamp of entry or update")
+
+
+class CaseView(CaseInfo):
+    """Read model: case row + joined patient fields."""
+
+    patient_name: Optional[str] = Field(default=None, description="Patient name (LAST, FIRST)")
+    patient_dob: Optional[date] = Field(default=None, description="Date of birth (YYYY-MM-DD)")

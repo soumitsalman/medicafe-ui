@@ -421,8 +421,12 @@ Reference docs for this stack (Nuxt 4, Vue 3, Nuxt UI):
 ---
 
 ## AGENT RULES
-ALL Agent responses MUST BE EXTREMELY CONCISE.
-Answer ONLY yes or no where applicable
-Provide bullet points for options and steps
-Avoid explanations unless explicitly prompted
-NEVER make git commit or push unless explicitly prompted
+- ALL Agent responses MUST BE EXTREMELY CONCISE.
+- Answer ONLY yes or no where applicable
+- Provide bullet points for options and steps
+- Avoid explanations unless explicitly prompted
+- NEVER make git commit or push unless explicitly prompted
+- When instructed to apply a specific pattern (e.g., "add cursor"), apply ONLY that pattern.
+- Never rename, rewrite, or restructure existing working code unless explicitly asked.
+- Never use `git checkout`, `git restore`, or `git reset` to fix mistakes — use targeted edits.
+- Minimize diff size. If the instruction is one line, the diff should be ~one line.
