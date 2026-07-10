@@ -2,16 +2,17 @@ from contextlib import asynccontextmanager
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from db import CasesDB
 from middleware import ApiKeyMiddleware
-from routers import cases_router
+
+from db import CasesDB
+from routers import cases_router, DEFAULT_FACILITY_ID
 from dotenv import load_dotenv
 
 load_dotenv()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.db = CasesDB(os.getenv("CASES_DB_PATH"))
+    app.state.db = CasesDB(os.path.join(os.getenv("CASES_DB_PATH", "."), DEFAULT_FACILITY_ID.hex+".duckdb"))
     yield
     app.state.db.close()
 

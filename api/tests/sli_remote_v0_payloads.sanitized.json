@@ -1,0 +1,54 @@
+{
+  "experiment": {
+    "phi_emitted": false,
+    "sampled_dos_count": 3,
+    "sampled_row_count": 6,
+    "sanitization": "All identifiers, DOS, names, and clinical values are synthetic.",
+    "source_format": "docx_schedule_index.schedules.<dos>.current.patients",
+    "source_selected_dos_patient_rows_count": 38,
+    "source_schedule_count": 339
+  },
+  "samples": {
+    "initial_insert": {
+      "schema": "sli.remote_upsert.v0",
+      "batch_id": "xp-a-initial-0001",
+      "rows": [
+        {"key": {"patient_id": "90001", "dos": "08-03-2026", "service_line_kind": "anesthesia", "line_ordinal": 1}, "local_revision": 1, "patch": {"patient_name": "Avery Sample", "diagnosis": "H25.11", "eye": "R", "femto": "", "docx_position": 1, "status": "needs_review"}},
+        {"key": {"patient_id": "90002", "dos": "08-03-2026", "service_line_kind": "anesthesia", "line_ordinal": 1}, "local_revision": 1, "patch": {"patient_name": "Jordan Example", "diagnosis": "H25.12", "eye": "L", "femto": "yes", "docx_position": 2, "status": "needs_review"}},
+        {"key": {"patient_id": "90003", "dos": "08-10-2026", "service_line_kind": "anesthesia", "line_ordinal": 1}, "local_revision": 1, "patch": {"patient_name": "Morgan Demo", "diagnosis": "H40.1112", "eye": "R", "femto": "", "docx_position": 1, "status": "needs_review"}},
+        {"key": {"patient_id": "90004", "dos": "08-10-2026", "service_line_kind": "anesthesia", "line_ordinal": 1}, "local_revision": 1, "patch": {"patient_name": "Riley Test", "diagnosis": "H40.1122", "eye": "L", "femto": "yes", "docx_position": 2, "status": "needs_review"}},
+        {"key": {"patient_id": "90005", "dos": "08-17-2026", "service_line_kind": "anesthesia", "line_ordinal": 1}, "local_revision": 1, "patch": {"patient_name": "Avery Sample", "diagnosis": "H25.11", "eye": "R", "femto": "", "docx_position": 1, "status": "needs_review"}},
+        {"key": {"patient_id": "90006", "dos": "08-17-2026", "service_line_kind": "anesthesia", "line_ordinal": 1}, "local_revision": 1, "patch": {"patient_name": "Jordan Example", "diagnosis": "H25.12", "eye": "L", "femto": "yes", "docx_position": 2, "status": "needs_review"}}
+      ]
+    },
+    "upsert_minutes_note": {
+      "schema": "sli.remote_upsert.v0",
+      "batch_id": "xp-a-edit-0002",
+      "rows": [
+        {"key": {"patient_id": "90001", "dos": "08-03-2026", "service_line_kind": "anesthesia", "line_ordinal": 1}, "local_revision": 2, "patch": {"minutes": 22, "note": "Awaiting final diagnosis confirmation."}}
+      ]
+    },
+    "upsert_dx_cpt": {
+      "schema": "sli.remote_upsert.v0",
+      "batch_id": "xp-a-edit-0003",
+      "rows": [
+        {"key": {"patient_id": "90002", "dos": "08-03-2026", "service_line_kind": "anesthesia", "line_ordinal": 1}, "local_revision": 2, "patch": {"diagnosis": "H25.12", "cpt": "00142"}}
+      ]
+    },
+    "upsert_clear_and_complete": {
+      "schema": "sli.remote_upsert.v0",
+      "batch_id": "xp-a-edit-0004",
+      "rows": [
+        {"key": {"patient_id": "90003", "dos": "08-10-2026", "service_line_kind": "anesthesia", "line_ordinal": 1}, "local_revision": 2, "patch": {"note": null, "minutes": 31, "status": "review_complete"}}
+      ]
+    },
+    "get_changes_response": {
+      "schema": "sli.remote_changes.v0",
+      "next_cursor": "cursor-demo-0007",
+      "changes": [
+        {"change_id": "change-demo-0006", "key": {"patient_id": "90001", "dos": "08-03-2026", "service_line_kind": "anesthesia", "line_ordinal": 1}, "base_local_revision": 2, "patch": {"minutes": 24, "diagnosis": "H25.11", "cpt": "00142", "status": "review_complete", "note": "Provider confirmed the final values."}},
+        {"change_id": "change-demo-0007", "key": {"patient_id": "90002", "dos": "08-03-2026", "service_line_kind": "anesthesia", "line_ordinal": 1}, "base_local_revision": 2, "patch": {"note": "Please verify laterality before completion."}}
+      ]
+    }
+  }
+}
