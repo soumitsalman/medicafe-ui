@@ -8,19 +8,20 @@ services:
       - medicafe-cases:/data
     environment:
       CASES_DB_PATH: /data
-      CASES_DB_API_KEY: ${BACKEND_API_KEY:-}
+      CASES_DB_API_KEY: ${NUXT_PUBLIC_API_KEY:-}
     networks:
       - medicafe
 
   app:
-    build: ./ui
+    build: ./app
     container_name: medicafe-app
     ports:
       - "3000:8080"
     environment:
-      # Browser reaches the API via the published host port
-      BACKEND_BASE_URL: ${BACKEND_BASE_URL:-http://localhost:8000}
-      BACKEND_API_KEY: ${BACKEND_API_KEY:-}
+      # Runtime only (Nuxt maps NUXT_PUBLIC_* → runtimeConfig.public). Never build-time.
+      # Browser reaches the API via the published host port.
+      NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE:-http://localhost:8000}
+      NUXT_PUBLIC_API_KEY: ${NUXT_PUBLIC_API_KEY:-}
     depends_on:
       - api
     networks:

@@ -179,14 +179,14 @@ source .venv/bin/activate
 pip install -r requirements.txt
 
 export CASES_DB_PATH=./data/cases.duckdb   # optional; omit for in-memory DB
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+fastapi run
 ```
 
-Point the UI at this server via `ui/.env`:
+Point the UI at this server via `app/.env`:
 
 ```
-BACKEND_BASE_URL=http://localhost:8000
-BACKEND_API_KEY=          # optional; must match API CASES_DB_API_KEY if set
+NUXT_PUBLIC_API_BASE=http://localhost:8000
+NUXT_PUBLIC_API_KEY=          # optional; must match API CASES_DB_API_KEY if set
 ```
 
 ---
@@ -226,12 +226,12 @@ The image listens on `0.0.0.0:8000` and stores the database at `/data/cases.duck
 
 ### Pairing with the UI
 
-UI API settings are **runtime only** (never Docker build args). See `ui/Dockerfile` / `ui/README.md`:
+UI API settings are **runtime only** (never Docker build args). See `app/Dockerfile` / `app/README.md`:
 
 ```bash
 docker run --rm -p 3000:8080 \
-  -e BACKEND_BASE_URL=https://api.example.com \
-  -e BACKEND_API_KEY=your-secret \
+  -e NUXT_PUBLIC_API_BASE=https://api.example.com \
+  -e NUXT_PUBLIC_API_KEY=your-secret \
   medicafe-ui
 ```
 

@@ -6,9 +6,9 @@
 ### Project Scope
 - UI wires to the FastAPI app in `api/` for schedule load (`GET /cases/schedules`), billable submit (`POST /cases/billables`), and billing history (`GET /cases/billables`)
 - Card edits (minutes, dx, mission, cancel, undo, issue) are **local in memory** until Send to Office
-- UI lives under `ui/` (Nuxt app in `ui/app/`)
-- API base URL from deploy/runtime `BACKEND_BASE_URL` → `runtimeConfig.public.apiBase` (via `server/plugins/backend-env.ts`; never build-time; no mock fallback)
-- Optional `BACKEND_API_KEY` → `runtimeConfig.public.apiKey`; UI sends `X-API-KEY` when set; `api/` middleware validates via `CASES_DB_API_KEY` (falls back to `API_KEY`)
+- UI lives under `app/` (Nuxt app in `app/app/`)
+- API base URL from deploy/runtime `NUXT_PUBLIC_API_BASE` → `runtimeConfig.public.apiBase` (Nuxt env override; never build-time; no mock fallback)
+- Optional `NUXT_PUBLIC_API_KEY` → `runtimeConfig.public.apiKey`; UI sends `X-API-KEY` when set; `api/` middleware validates via `CASES_DB_API_KEY` (falls back to `API_KEY`)
 
 ---
 
@@ -206,7 +206,7 @@ In-memory case queue — no per-action HTTP round-trips:
 ### HTTP API (`useCaseApi`)
 - `getCases()` → `GET ${apiBase}/cases/schedules`
 - `sendToOffice(cases)` → `POST ${apiBase}/cases/billables`
-- `apiBase` from runtime `BACKEND_BASE_URL` (never baked at build)
+- `apiBase` from runtime `NUXT_PUBLIC_API_BASE` (never baked at build)
 
 ### Billing API (`useBillingApi`)
 - `getBillingSummaries()` → `GET ${apiBase}/cases/billables`
@@ -368,7 +368,7 @@ After successful send, display:
 ## Theming and Color
 
 ### Palette (calm clinical)
-Defined once via Nuxt UI color aliases in `ui/app/app.config.ts`:
+Defined once via Nuxt UI color aliases in `app/app/app.config.ts`:
 
 | Alias | Color | Role |
 |---|---|---|

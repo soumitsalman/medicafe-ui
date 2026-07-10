@@ -5,7 +5,7 @@ Nuxt 4 + Nuxt UI front end for end-of-shift case documentation (Schedule → Sen
 ## Directory structure
 
 ```
-ui/
+app/
 ├── app/                    # Nuxt app source
 │   ├── app.config.ts       # Nuxt UI color aliases (Soft Medical palette)
 │   ├── app.vue             # Root shell
@@ -21,27 +21,26 @@ ui/
 │   ├── settings/           # UI constants
 │   ├── types/              # CaseInfo / billing JSDoc types
 │   └── utils/              # apiFetch, caseSelectors, billingSelectors, dxLookup, duration
-├── server/plugins/         # Runtime BACKEND_* → runtimeConfig bridge
 ├── public/                 # Static assets (favicon)
 ├── nuxt.config.ts          # Modules, runtimeConfig, redirects
 ├── package.json            # Scripts + deps (pnpm)
 ├── Dockerfile              # Multi-stage production image (port 8080)
-├── .env                    # Local BACKEND_BASE_URL / BACKEND_API_KEY (gitignored)
+├── .env                    # Local NUXT_PUBLIC_API_BASE / NUXT_PUBLIC_API_KEY (gitignored)
 └── eslint.config.mjs / tsconfig.json / pnpm-*.yaml
 ```
 
-Repo root `docker-compose.yml` builds this package as service `app` (`./ui`) alongside `./api`.
+Repo root `docker-compose.yml` builds this package as service `app` (`./app`) alongside `./api`.
 
 ## API contract
 
-Env (`ui/.env` or container env → `server/plugins/backend-env.ts` → `runtimeConfig.public`):
+Env (`app/.env` or container env → Nuxt `runtimeConfig.public` via `NUXT_PUBLIC_*`):
 
 | Env var | Runtime key | Role |
 |---|---|---|
-| `BACKEND_BASE_URL` | `apiBase` | API origin (required at deploy; empty if unset → UI shows nothing) |
-| `BACKEND_API_KEY` | `apiKey` | Optional; sent as `X-API-KEY` when set |
+| `NUXT_PUBLIC_API_BASE` | `apiBase` | API origin (required at deploy; empty if unset → UI shows nothing) |
+| `NUXT_PUBLIC_API_KEY` | `apiKey` | Optional; sent as `X-API-KEY` when set |
 
-These are **runtime / deploy-time only** — never Docker build `ARG`/`ENV`.
+These are **runtime / deploy-time only** — never Docker build `ARG`/`ENV`. Do not assign them in Nitro plugins (server `runtimeConfig` is read-only).
 
 ### Required paths
 
@@ -87,45 +86,45 @@ Statuses used by the UI: `scheduled` | `billable` | `mission` | `cancelled` | `s
 ### Local dev
 
 ```bash
-cd ui
+cd app
 # create .env with:
-#   BACKEND_BASE_URL=http://localhost:8000
-#   BACKEND_API_KEY=          # optional
+#   NUXT_PUBLIC_API_BASE=http://localhost:8000
+#   NUXT_PUBLIC_API_KEY=          # optional
 pnpm install
 pnpm dev               # http://localhost:3000
 ```
 
-Point `BACKEND_BASE_URL` at a running API (e.g. `http://localhost:8000`).
+Point `NUXT_PUBLIC_API_BASE` at a running API (e.g. `http://localhost:8000`).
 
 ### Production build (Node)
 
 ```bash
-cd ui
+cd app
 pnpm install
 pnpm build
-BACKEND_BASE_URL=http://localhost:8000 BACKEND_API_KEY= \
+NUXT_PUBLIC_API_BASE=http://localhost:8000 NUXT_PUBLIC_API_KEY= \
   HOST=0.0.0.0 PORT=8080 node .output/server/index.mjs
 ```
 
 ### Docker Compose (repo root)
 
 ```bash
-# from repo root — set BACKEND_BASE_URL / BACKEND_API_KEY in shell or .env
+# from repo root — set NUXT_PUBLIC_API_BASE / NUXT_PUBLIC_API_KEY in shell or .env
 docker compose up --build
 ```
 
 - UI: `http://localhost:3000` (host) → container port `8080`
 - API: `http://localhost:8000`
 
-`BACKEND_BASE_URL` should be the URL the **browser** uses to reach the API (typically `http://localhost:8000`).
+`NUXT_PUBLIC_API_BASE` should be the URL the **browser** uses to reach the API (typically `http://localhost:8000`).
 
 ### Docker image only
 
 ```bash
-cd ui
+cd app
 docker build -t medicafe-ui .
 docker run --rm -p 3000:8080 \
-  -e BACKEND_BASE_URL=http://localhost:8000 \
-  -e BACKEND_API_KEY= \
+  -e NUXT_PUBLIC_API_BASE=http://localhost:8000 \
+  -e NUXT_PUBLIC_API_KEY= \
   medicafe-ui
 ```

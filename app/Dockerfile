@@ -1,8 +1,8 @@
 # Medicafe UI — Nuxt 4 production image (api/ excluded via .dockerignore)
 #
-# Runtime only (set at deploy / compose — never as build ARG):
-#   BACKEND_BASE_URL  → runtimeConfig.public.apiBase
-#   BACKEND_API_KEY   → runtimeConfig.public.apiKey
+# Runtime only (set at deploy / compose — never as build ARG/ENV):
+#   NUXT_PUBLIC_API_BASE → runtimeConfig.public.apiBase
+#   NUXT_PUBLIC_API_KEY  → runtimeConfig.public.apiKey
 
 FROM node:22-alpine AS deps
 WORKDIR /app
@@ -14,12 +14,6 @@ RUN pnpm install --frozen-lockfile
 
 FROM deps AS build
 COPY . .
-
-# Prevent host-exported secrets/URLs from baking into the image
-ENV BACKEND_BASE_URL=
-ENV BACKEND_API_KEY=
-ENV CASES_BASE_URL=
-ENV CASES_DB_API_KEY=
 
 RUN pnpm build
 

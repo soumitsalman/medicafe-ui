@@ -24,8 +24,9 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
-  // Empty defaults — set at deploy/runtime via BACKEND_BASE_URL / BACKEND_API_KEY
-  // (see server/plugins/backend-env.ts). Never bake these at build time.
+  // Empty defaults — override at process start only (never build ARG/ENV):
+  //   NUXT_PUBLIC_API_BASE → public.apiBase
+  //   NUXT_PUBLIC_API_KEY  → public.apiKey
   runtimeConfig: {
     public: {
       apiBase: '',
