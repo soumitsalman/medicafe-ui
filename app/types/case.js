@@ -1,5 +1,5 @@
 /**
- * @typedef {'scheduled'|'billable'|'mission'|'cancelled'|'issue'} CaseStatus
+ * @typedef {'scheduled'|'billable'|'mission'|'cancelled'|'skipped'} CaseStatus
  */
 
 /**
@@ -31,10 +31,7 @@
 /**
  * POST /cases/billables response.
  * @typedef {Object} BillableCasesSubmissionResponse
- * @property {string[]} billable
- * @property {string[]} mission
- * @property {string[]} cancelled
- * @property {string[]} issues
+ * @property {string[]} updated
  */
 
 export {}

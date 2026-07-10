@@ -1,7 +1,7 @@
 /** @typedef {import('~/types/case').CaseInfo} CaseInfo */
 /** @typedef {import('~/types/case').CaseStatus} CaseStatus */
 
-const TERMINAL = new Set(['billable', 'mission', 'cancelled', 'issue'])
+const TERMINAL = new Set(['billable', 'mission', 'cancelled', 'skipped'])
 
 /**
  * @param {CaseStatus} status
@@ -16,7 +16,7 @@ export function isTerminalStatus(status) {
  * @returns {boolean}
  */
 export function isIssueStatus(status) {
-  return status === 'issue'
+  return status === 'skipped'
 }
 
 /**
@@ -24,8 +24,8 @@ export function isIssueStatus(status) {
  * @returns {CaseStatus}
  */
 export function statusFromCaseState({ minutes, mission, issueLocked = false, currentStatus }) {
-  if (issueLocked && currentStatus === 'issue') {
-    return 'issue'
+  if (issueLocked && currentStatus === 'skipped') {
+    return 'skipped'
   }
   if (minutes === 0) return 'cancelled'
   if (!Number.isInteger(minutes) || minutes < 0) return 'scheduled'
@@ -77,7 +77,7 @@ export function statusDisplayFromCase(status) {
         borderClass: 'border-error',
         opacityClass: 'opacity-70'
       }
-    case 'issue':
+    case 'skipped':
       return {
         icon: 'i-lucide-circle-alert',
         textClass: 'text-warning',
@@ -125,7 +125,7 @@ export function sendSummary(cases) {
   const billable = cases.filter(c => c.status === 'billable')
   const mission = cases.filter(c => c.status === 'mission')
   const cancelled = cases.filter(c => c.status === 'cancelled')
-  const issues = cases.filter(c => c.status === 'issue')
+  const issues = cases.filter(c => c.status === 'skipped')
 
   return {
     billableCount: billable.length,
@@ -142,15 +142,9 @@ export function sendSummary(cases) {
  * @param {import('~/types/case').BillableCasesSubmissionResponse} response
  */
 export function sendSummaryFromResponse(cases, response) {
-  const local = sendSummary(cases)
-  return {
-    billableCount: response.billable.length,
-    billableMinutes: local.billableMinutes,
-    missionCount: response.mission.length,
-    missionMinutes: local.missionMinutes,
-    cancelledCount: response.cancelled.length,
-    issueCount: response.issues.length
-  }
+  const updatedIds = new Set((response.updated ?? []).map(String))
+  const confirmed = cases.filter(c => updatedIds.has(String(c.case_id)))
+  return sendSummary(confirmed)
 }
 
 /**

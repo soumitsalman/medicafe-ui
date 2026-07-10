@@ -6,7 +6,7 @@ FastAPI backend for the **Modern Workflow** UI. Persists anesthesia case schedul
 
 1. **Ingest schedules** — external systems POST a shift’s scheduled cases; the API stores them with `status: scheduled` and deterministic UUIDs.
 2. **Serve the active queue** — the UI loads today’s scheduled cases via `GET /cases/schedules`.
-3. **Accept documentation** — after end-of-shift triage, the UI POSTs terminal cases (`billable`, `mission`, `cancelled`, `issue`) via `POST /cases/billables`.
+3. **Accept documentation** — after end-of-shift triage, the UI POSTs terminal cases (`billable`, `mission`, `cancelled`, `skipped`) via `POST /cases/billables`.
 4. **Expose billing history** — the Billing page reads submitted cases via `GET /cases/billables`.
 
 Case IDs are derived from facility, provider, service date/time, patient, and diagnosis when not supplied. Re-posting the same schedule payload upserts (`ON CONFLICT DO UPDATE` with `COALESCE` so null fields leave existing values).
@@ -21,7 +21,7 @@ Case IDs are derived from facility, provider, service date/time, patient, and di
 | `POST` | `/cases/schedules` | Ingest scheduled cases for a shift |
 | `GET` | `/cases/schedules` | List scheduled cases (default facility/provider) |
 | `POST` | `/cases/billables` | Update cases to terminal statuses |
-| `GET` | `/cases/billables` | List submitted billable/mission/cancelled/issue cases |
+| `GET` | `/cases/billables` | List submitted billable/mission/cancelled/skipped cases |
 
 Interactive docs: `GET /docs` (Swagger UI) when the server is running.
 
@@ -118,7 +118,7 @@ Update documented cases. Body is a `CaseInfo[]` with terminal `status` values.
 ]
 ```
 
-Issue cases may include `sub_status` (`identity_issue`, `needs_review`) and `note`.
+Skipped cases may include `sub_status` (`identity_issue`, `needs_review`) and `note`.
 
 **Response:**
 
@@ -133,7 +133,7 @@ Issue cases may include `sub_status` (`identity_issue`, `needs_review`) and `not
 
 ### `GET /cases/billables`
 
-Returns submitted cases (`billable`, `mission`, `cancelled`, `issue`) grouped with the latest service date.
+Returns submitted cases (`billable`, `mission`, `cancelled`, `skipped`) grouped with the latest service date.
 
 **Response:**
 
@@ -154,7 +154,7 @@ Returns submitted cases (`billable`, `mission`, `cancelled`, `issue`) grouped wi
 | `billable` | Documented, billable minutes |
 | `mission` | Documented mission case |
 | `cancelled` | Cancelled (`minutes: 0`) |
-| `issue` | Flagged for office review |
+| `skipped` | Flagged for office review |
 
 ---
 

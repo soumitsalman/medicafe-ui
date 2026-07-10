@@ -1,0 +1,108 @@
+{
+  "schema": "sli.remote_upsert.v0",
+  "batch_id": "xp-a-initial-0001",
+  "rows": [
+    {
+      "key": {
+        "patient_id": "90001",
+        "dos": "08-03-2026",
+        "service_line_kind": "anesthesia",
+        "line_ordinal": 1
+      },
+      "local_revision": 1,
+      "patch": {
+        "patient_name": "Avery Sample",
+        "diagnosis": "H25.11",
+        "eye": "R",
+        "femto": "",
+        "docx_position": 1,
+        "status": "needs_review"
+      }
+    },
+    {
+      "key": {
+        "patient_id": "90002",
+        "dos": "08-03-2026",
+        "service_line_kind": "anesthesia",
+        "line_ordinal": 1
+      },
+      "local_revision": 1,
+      "patch": {
+        "patient_name": "Jordan Example",
+        "diagnosis": "H25.12",
+        "eye": "L",
+        "femto": "yes",
+        "docx_position": 2,
+        "status": "needs_review"
+      }
+    },
+    {
+      "key": {
+        "patient_id": "90003",
+        "dos": "08-10-2026",
+        "service_line_kind": "anesthesia",
+        "line_ordinal": 1
+      },
+      "local_revision": 1,
+      "patch": {
+        "patient_name": "Morgan Demo",
+        "diagnosis": "H40.1112",
+        "eye": "R",
+        "femto": "",
+        "docx_position": 1,
+        "status": "needs_review"
+      }
+    },
+    {
+      "key": {
+        "patient_id": "90004",
+        "dos": "08-10-2026",
+        "service_line_kind": "anesthesia",
+        "line_ordinal": 1
+      },
+      "local_revision": 1,
+      "patch": {
+        "patient_name": "Riley Test",
+        "diagnosis": "H40.1122",
+        "eye": "L",
+        "femto": "yes",
+        "docx_position": 2,
+        "status": "needs_review"
+      }
+    },
+    {
+      "key": {
+        "patient_id": "90005",
+        "dos": "08-17-2026",
+        "service_line_kind": "anesthesia",
+        "line_ordinal": 1
+      },
+      "local_revision": 1,
+      "patch": {
+        "patient_name": "Avery Sample",
+        "diagnosis": "H25.11",
+        "eye": "R",
+        "femto": "",
+        "docx_position": 1,
+        "status": "needs_review"
+      }
+    },
+    {
+      "key": {
+        "patient_id": "90006",
+        "dos": "08-17-2026",
+        "service_line_kind": "anesthesia",
+        "line_ordinal": 1
+      },
+      "local_revision": 1,
+      "patch": {
+        "patient_name": "Jordan Example",
+        "diagnosis": "H25.12",
+        "eye": "L",
+        "femto": "yes",
+        "docx_position": 2,
+        "status": "needs_review"
+      }
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "schema": "sli.remote_changes.v0",
+  "next_cursor": "cursor-demo-0007",
+  "changes": [
+    {
+      "change_id": "change-demo-0006",
+      "key": {
+        "patient_id": "90001",
+        "dos": "08-03-2026",
+        "service_line_kind": "anesthesia",
+        "line_ordinal": 1
+      },
+      "base_local_revision": 2,
+      "patch": {
+        "minutes": 24,
+        "diagnosis": "H25.11",
+        "cpt": "00142",
+        "status": "review_complete",
+        "note": "Provider confirmed the final values."
+      }
+    },
+    {
+      "change_id": "change-demo-0007",
+      "key": {
+        "patient_id": "90002",
+        "dos": "08-03-2026",
+        "service_line_kind": "anesthesia",
+        "line_ordinal": 1
+      },
+      "base_local_revision": 2,
+      "patch": {
+        "note": "Please verify laterality before completion."
+      }
+    }
+  ]
+}

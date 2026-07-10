@@ -46,7 +46,7 @@ export function billingSummariesFromResponse(response) {
       summary.nonBilledHours += minutes / 60
     } else if (c.status === 'cancelled') {
       summary.cancelledCount += 1
-    } else if (c.status === 'issue') {
+    } else if (c.status === 'skipped') {
       summary.issueCount += 1
     }
   }

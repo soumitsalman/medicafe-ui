@@ -96,7 +96,7 @@ export function useCaseQueue() {
     const c = cases.value.find(item => item.case_id === case_id)
     if (!c) return
 
-    c.status = 'issue'
+    c.status = 'skipped'
     c.sub_status = [...sub_status]
     c.note = note
   }

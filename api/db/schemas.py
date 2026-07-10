@@ -4,7 +4,7 @@ from typing import Literal, Optional
 from pydantic import BaseModel, Field
 
 IssueType = Literal["identity_issue", "needs_review"]
-CaseStatus = Literal["scheduled", "billable", "mission", "cancelled", "issue"]
+CaseStatus = Literal["scheduled", "billable", "mission", "cancelled", "skipped"]
 
 
 class CaseInfo(BaseModel):
@@ -19,7 +19,7 @@ class CaseInfo(BaseModel):
     
     minutes: Optional[int] = Field(default=None, description="Procedure minutes (suggested on receive, required on document)")
     status: Optional[CaseStatus] = Field(default=None, description="Terminal case status")
-    sub_status: Optional[list[IssueType]] = Field(default=None, description="Issue types when status is issue")
+    sub_status: Optional[list[IssueType]] = Field(default=None, description="Issue types when status is skipped")
     note: Optional[str] = Field(default=None, description="Optional case note")
     
     # internal maintainence fields

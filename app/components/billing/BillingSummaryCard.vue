@@ -26,7 +26,7 @@ const cancelledLabel = computed(() => {
 
 const issueLabel = computed(() => {
   const n = props.summary.issueCount
-  return `${n} ${n === 1 ? 'issue' : 'issues'}`
+  return `${n} skipped`
 })
 </script>
 

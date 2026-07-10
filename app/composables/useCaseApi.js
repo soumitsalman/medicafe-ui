@@ -39,7 +39,7 @@ export function useCaseApi() {
     })
     return {
       payload,
-      summary: sendSummaryFromResponse(cases, response)
+      summary: sendSummaryFromResponse(payload, response)
     }
   }
 

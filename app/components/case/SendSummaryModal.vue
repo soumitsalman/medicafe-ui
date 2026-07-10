@@ -39,7 +39,7 @@ defineProps({
           v-if="summary.issueCount"
           color="warning"
         >
-          {{ summary.issueCount }} with issue
+          {{ summary.issueCount }} skipped
         </UBadge>
         <UBadge
           v-if="!summary.billableCount && !summary.missionCount && !summary.cancelledCount && !summary.issueCount"

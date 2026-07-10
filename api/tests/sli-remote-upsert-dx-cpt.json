@@ -1,0 +1,19 @@
+{
+  "schema": "sli.remote_upsert.v0",
+  "batch_id": "xp-a-edit-0003",
+  "rows": [
+    {
+      "key": {
+        "patient_id": "90002",
+        "dos": "08-03-2026",
+        "service_line_kind": "anesthesia",
+        "line_ordinal": 1
+      },
+      "local_revision": 2,
+      "patch": {
+        "diagnosis": "H25.12",
+        "cpt": "00142"
+      }
+    }
+  ]
+}

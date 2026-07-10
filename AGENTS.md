@@ -90,7 +90,7 @@ Case time is entered manually, not tracked live.
     "cpt": "00140",
     "eye": "LEFT",
     "minutes": 15,
-    "status": "issue",
+    "status": "skipped",
     "sub_status": ["identity_issue"],
     "note": "MRN mismatch on wristband"
   }
@@ -118,7 +118,7 @@ Use **one explicit status** per case:
 - `billable` — terminal; `minutes > 0`, mission checkbox off
 - `mission` — terminal; `minutes > 0`, mission checkbox on
 - `cancelled` — terminal; `minutes === 0`
-- `issue` — terminal; sticky; `sub_status` holds issue types; minutes may be null or positive
+- `skipped` — terminal; sticky; `sub_status` holds issue types; minutes may be null or positive
 
 Issue types (`sub_status` entries — multi-select, not statuses):
 - `identity_issue`
@@ -133,10 +133,10 @@ Do **not** derive status inside components. All derivation lives in `caseSelecto
 | `scheduled` | `mission` | `minutes > 0` and mission on |
 | `scheduled` / `billable` / `mission` | `cancelled` | **Cancel** or `minutes = 0` |
 | `cancelled` / `billable` / `mission` | `scheduled` | **Undo** (clears minutes, mission, note, sub_status) |
-| any non-issue | `issue` | Issue modal → one or more types in `sub_status` |
-| `issue` | `scheduled` | **Undo** (clears `sub_status`) |
+| any non-skipped | `skipped` | Issue modal → one or more types in `sub_status` |
+| `skipped` | `scheduled` | **Undo** (clears `sub_status`) |
 
-**Issue status is sticky** until Undo. Minutes/mission patches do not override `issue`.
+**Skipped status is sticky** until Undo. Minutes/mission patches do not override `skipped`.
 
 ### Case Shape
 ```js
@@ -155,7 +155,7 @@ Do **not** derive status inside components. All derivation lives in `caseSelecto
   eye,               // derived from dx
   minutes: null,     // null = scheduled; 0 = cancelled; > 0 = billable/mission
   mission: false,    // UI-only checkbox flag
-  status,            // scheduled | billable | mission | cancelled | issue
+  status,            // scheduled | billable | mission | cancelled | skipped
   sub_status: [],    // IssueType[] — identity_issue | needs_review (multi-select)
   note: ''
 }
@@ -164,27 +164,27 @@ Do **not** derive status inside components. All derivation lives in `caseSelecto
 ### Triage Rules
 
 **Minutes + mission → status (live, on local update, unless issue-locked):**
-- `status === 'issue'` (issue-locked) → `issue`
+- `status === 'skipped'` (issue-locked) → `skipped`
 - `minutes === 0` → `cancelled`
 - `minutes` null / empty / invalid → `scheduled` (even if mission checkbox on)
 - `minutes > 0` + mission on → `mission`
 - `minutes > 0` + mission off → `billable`
 
 **Cancel (per card):**
-- Visible when minutes empty or positive (not issue)
+- Visible when minutes empty or positive (not skipped)
 - Sets `minutes = 0`, `mission = false` → `cancelled`
 
 **Undo (per card):**
-- Visible when cancelled, issue status, or minutes === 0
+- Visible when cancelled, skipped status, or minutes === 0
 - Sets `minutes = null`, `mission = false`, `note = ''`, `sub_status = []` → `scheduled`
 
 **Issue (per card):**
 - Opens modal with multi-select chips: Identity issue | Needs review (one or both)
-- Optional note; submit sets `status = 'issue'` and `sub_status` array; minutes unchanged
+- Optional note; submit sets `status = 'skipped'` and `sub_status` array; minutes unchanged
 - Submit disabled until at least one issue type selected
 
 **Send to Office (page footer)** — hard gate:
-- Enabled only when every case has a terminal status (`billable`, `mission`, `cancelled`, `issue`)
+- Enabled only when every case has a terminal status (`billable`, `mission`, `cancelled`, `skipped`)
 - Equivalent check: `canSendToOffice(cases)`
 - On success: `serializeCasesForBillables()`, POST to API, show summary modal, reload queue
 
@@ -199,7 +199,7 @@ In-memory case queue — no per-action HTTP round-trips:
 - `setMission(case_id, checked)` — set UI-only mission flag; re-derive status
 - `cancelCase(case_id)` — `minutes = 0`, `mission = false`, `status = 'cancelled'`
 - `undoCase(case_id)` — reset to `scheduled`
-- `reportIssue(case_id, { sub_status, note })` — set `status = 'issue'`
+- `reportIssue(case_id, { sub_status, note })` — set `status = 'skipped'`
 - `sendToOffice()` — serialize, POST, clear queue
 
 ### HTTP API (`useCaseApi`)
@@ -217,7 +217,7 @@ In-memory case queue — no per-action HTTP round-trips:
 - `isTerminalStatus(status)` — gate helper
 - `isIssueStatus(status)` — issue-lock helper
 - `canSendToOffice(cases)` — every case terminal
-- `sendSummary(cases)` — billable/mission/cancelled/issue counts + minute totals
+- `sendSummary(cases)` — billable/mission/cancelled/skipped counts + minute totals
 - `serializeCasesForBillables(cases)` — build `CaseInfo[]` POST body (omits UI-only `mission`)
 
 ### Billing Selectors (`billingSelectors.js`)
@@ -269,7 +269,7 @@ Avoid:
 ┌────────────────────────────────────────────────────────────┐
 │ [patient_id] [icon?] NAME (colored)  MM/DD/YYYY (Ny) │ min │  row 1
 │ [dx ▼]  [cpt badge]  [eye badge]                           │  row 2
-│ [issue type chips] (when status issue)                     │  row 2a (conditional)
+│ [issue type chips] (when status skipped)                     │  row 2a (conditional)
 │ [editable note textarea]                            [X]    │  row 2b (conditional)
 ├────────────────────────────────────────────────────────────┤
 │ ☐ Mission                    Cancel  Undo  Issue           │  row 3
@@ -281,7 +281,7 @@ Avoid:
 | 1 | `patient_id` badge + status icon + colored name + DOB `MM/DD/YYYY (Ny)` | Minutes input |
 | 2 | DX dropdown + CPT badge + eye badge | — |
 | 2a | Issue type chips from `sub_status` (`warning` badges) | — |
-| 2b | Editable note (issue status + non-empty note only); X clears note | — |
+| 2b | Editable note (skipped status + non-empty note only); X clears note | — |
 | 3 | Mission checkbox | Cancel / Undo / Issue buttons |
 
 **Status display (row 1 — icon + colored name):**
@@ -292,16 +292,16 @@ Avoid:
 | `billable` | `primary` | check (`i-lucide-check-circle-2`) |
 | `mission` | `secondary` | heart (`i-lucide-heart`) |
 | `cancelled` | `error` | x (`i-lucide-x-circle`) |
-| `issue` | `warning` | alert (`i-lucide-circle-alert`) |
+| `skipped` | `warning` | alert (`i-lucide-circle-alert`) |
 
 **DOB + age:** use `date-fns` (`formatDobWithAge(patient_dob, service_date)`) — age computed via `differenceInYears` against `service_date`, not today.
 
 **Action visibility:**
-- **Cancel** — minutes empty or positive, not issue (`error`)
-- **Undo** — cancelled, issue status, or minutes === 0 (`neutral`)
-- **Issue** — visible when not cancelled and not issue (`warning`)
+- **Cancel** — minutes empty or positive, not skipped (`error`)
+- **Undo** — cancelled, skipped status, or minutes === 0 (`neutral`)
+- **Issue** — visible when not cancelled and not skipped (`warning`)
 
-**Note row (row 2b):** visible when `status === 'issue'` and `note` is non-empty; debounced edit via `updateCase({ note })`; X clears note.
+**Note row (row 2b):** visible when `status === 'skipped'` and `note` is non-empty; debounced edit via `updateCase({ note })`; X clears note.
 
 **Implementation:** wrap each row in `flex w-full justify-between items-center`.
 
@@ -329,7 +329,7 @@ flowchart LR
   B -->|undo| S
   M -->|undo| S
   C -->|undo| S
-  S -->|issue modal| I[issue + sub_status]
+  S -->|issue modal| I[skipped + sub_status]
   I -->|undo| S
   B -->|send| OUT[POST billables + summary]
   M -->|send| OUT
@@ -342,7 +342,7 @@ After successful send, display:
 - N billable cases (`billable` count from API response)
 - M mission cases (`mission` count from API response)
 - C cancelled cases (`cancelled` count from API response)
-- E cases with issues (`issues` count from API response)
+- E skipped cases (`issues` count from API response)
 
 ### C. End-to-End Shift Flow
 1. Clinician opens **Schedule** — queue loaded from `GET /cases/schedules`.

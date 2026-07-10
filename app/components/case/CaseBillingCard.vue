@@ -9,14 +9,14 @@ const statusLabel = computed(() => {
   if (props.caseItem.status === 'cancelled') return 'Cancelled'
   if (props.caseItem.status === 'mission') return 'Mission'
   if (props.caseItem.status === 'billable') return 'Billable'
-  if (props.caseItem.status === 'issue') return 'Issue'
+  if (props.caseItem.status === 'skipped') return 'Skipped'
   return props.caseItem.status
 })
 
 const statusColor = computed(() => {
   if (props.caseItem.status === 'cancelled') return 'error'
   if (props.caseItem.status === 'mission') return 'secondary'
-  if (props.caseItem.status === 'issue') return 'warning'
+  if (props.caseItem.status === 'skipped') return 'warning'
   return 'primary'
 })
 
