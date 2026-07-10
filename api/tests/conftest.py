@@ -31,7 +31,6 @@ from fixtures import (  # noqa: E402
 def client(tmp_path, monkeypatch):
     monkeypatch.setenv("CASES_DB_PATH", str(tmp_path / "cases.duckdb"))
     monkeypatch.delenv("API_KEY", raising=False)
-    monkeypatch.delenv("CASES_DB_API_KEY", raising=False)
     from main import app
 
     with TestClient(app) as test_client:

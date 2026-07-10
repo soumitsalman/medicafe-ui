@@ -37,22 +37,3 @@ def test_valid_api_key_allows_request(client, monkeypatch, schedule_receiving):
     get = client.get("/cases/schedules", headers=headers)
     assert get.status_code == 200
     assert len(get.json()) == 8
-
-
-def test_cases_db_api_key_env_var(client, monkeypatch, schedule_receiving):
-    monkeypatch.setenv("CASES_DB_API_KEY", "compose-key")
-    headers = {"X-API-KEY": "compose-key"}
-
-    post = client.post("/cases/schedules", json=schedule_receiving, headers=headers)
-    assert post.status_code == 200
-
-
-def test_cases_db_api_key_takes_precedence(client, monkeypatch):
-    monkeypatch.setenv("CASES_DB_API_KEY", "preferred-key")
-    monkeypatch.setenv("API_KEY", "legacy-key")
-
-    wrong = client.get("/cases/schedules", headers={"X-API-KEY": "legacy-key"})
-    assert wrong.status_code == 401
-
-    ok = client.get("/cases/schedules", headers={"X-API-KEY": "preferred-key"})
-    assert ok.status_code == 200

@@ -8,7 +8,7 @@
 - Card edits (minutes, dx, mission, cancel, undo, issue) are **local in memory** until Send to Office
 - UI lives under `app/` (Nuxt app in `app/app/`)
 - API base URL from deploy/runtime `NUXT_PUBLIC_API_BASE` → `runtimeConfig.public.apiBase` (Nuxt env override; never build-time; no mock fallback)
-- Optional `NUXT_PUBLIC_API_KEY` → `runtimeConfig.public.apiKey`; UI sends `X-API-KEY` when set; `api/` middleware validates via `CASES_DB_API_KEY` (falls back to `API_KEY`)
+- Optional `NUXT_PUBLIC_API_KEY` → `runtimeConfig.public.apiKey`; UI sends `X-API-KEY` when set; `api/` middleware validates via `API_KEY`
 
 ---
 

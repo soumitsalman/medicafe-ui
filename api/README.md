@@ -163,10 +163,9 @@ Returns submitted cases (`billable`, `mission`, `cancelled`, `skipped`) grouped 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `CASES_DB_PATH` | `:memory:` (local) / `/data/cases.duckdb` (Docker) | DuckDB file path |
-| `CASES_DB_API_KEY` | — | Preferred API key; enables `X-API-KEY` gate when set |
-| `API_KEY` | — | Legacy alias for `CASES_DB_API_KEY` |
+| `API_KEY` | — | Optional; enables `X-API-KEY` gate when set |
 
-When an API key env var is set, all routes except `/health` require header `X-API-KEY: <key>`. `CASES_DB_API_KEY` takes precedence over `API_KEY`.
+When an API key env var is set, all routes except `/health` require header `X-API-KEY: <key>`.
 
 ---
 
@@ -186,7 +185,7 @@ Point the UI at this server via `app/.env`:
 
 ```
 NUXT_PUBLIC_API_BASE=http://localhost:8000
-NUXT_PUBLIC_API_KEY=          # optional; must match API CASES_DB_API_KEY if set
+NUXT_PUBLIC_API_KEY=          # optional; must match API_KEY if set
 ```
 
 ---
@@ -218,7 +217,7 @@ docker run -d \
   --name medicafe-api \
   -p 8000:8000 \
   -v medicafe-cases:/data \
-  -e CASES_DB_API_KEY=your-secret \
+  -e API_KEY=your-secret \
   medicafe-api
 ```
 

@@ -6,14 +6,9 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
-
-def _configured_api_key() -> str | None:
-    return os.getenv("CASES_DB_API_KEY") or os.getenv("API_KEY")
-
-
 class ApiKeyMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        configured_key = _configured_api_key()
+        configured_key = os.getenv("API_KEY")
         if configured_key is None or request.url.path == "/health" or request.method == "OPTIONS":
             return await call_next(request)
 

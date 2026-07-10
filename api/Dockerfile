@@ -8,8 +8,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV CASES_DB_PATH=/data
 
-# Optional API key gate (X-API-KEY header). Prefer CASES_DB_API_KEY; legacy API_KEY is still accepted.
-# Set at runtime, e.g. docker run -e CASES_DB_API_KEY=your-secret ...
+# Optional API key gate (X-API-KEY header). Set at runtime, e.g. docker run -e API_KEY=your-secret ...
 
 RUN mkdir -p /data
 
