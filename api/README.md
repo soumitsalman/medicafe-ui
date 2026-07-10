@@ -9,7 +9,7 @@ FastAPI backend for the **Modern Workflow** UI. Persists anesthesia case schedul
 3. **Accept documentation** — after end-of-shift triage, the UI POSTs terminal cases (`billable`, `mission`, `cancelled`, `issue`) via `POST /cases/billables`.
 4. **Expose billing history** — the Billing page reads submitted cases via `GET /cases/billables`.
 
-Case IDs are derived from facility, provider, service date/time, patient, and diagnosis when not supplied. Re-posting the same schedule payload is idempotent (`ON CONFLICT DO NOTHING`).
+Case IDs are derived from facility, provider, service date/time, patient, and diagnosis when not supplied. Re-posting the same schedule payload upserts (`ON CONFLICT DO UPDATE` with `COALESCE` so null fields leave existing values).
 
 ---
 

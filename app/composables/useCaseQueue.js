@@ -35,7 +35,7 @@ export function useCaseQueue() {
 
   /**
    * @param {string} case_id
-   * @param {Partial<Pick<CaseInfo, 'dx' | 'minutes' | 'note'>>} fields
+   * @param {Partial<Pick<CaseInfo, 'diagnosis' | 'minutes' | 'note'>>} fields
    */
   function updateCase(case_id, fields) {
     const c = cases.value.find(item => item.case_id === case_id)
@@ -43,8 +43,8 @@ export function useCaseQueue() {
 
     Object.assign(c, fields)
 
-    if ('dx' in fields) {
-      const { cpt, eye } = deriveFromDx(c.dx)
+    if ('diagnosis' in fields) {
+      const { cpt, eye } = deriveFromDx(c.diagnosis)
       c.cpt = cpt
       c.eye = eye
     }

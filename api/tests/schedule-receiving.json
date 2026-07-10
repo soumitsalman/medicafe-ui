@@ -1,82 +1,66 @@
 {
-  "service_date": "2026-01-20",
-  "cases": [
-    {
-      "case_pos": 1,
-      "patient_id": "12345",
-      "patient_name": "LAST, FIRST",
-      "patient_dob": "1950-01-01",
-      "dx": "H25.812",
-      "cpt": "00142",
-      "eye": "LEFT",
-      "minutes": 15
-    },
-    {
-      "case_pos": 2,
-      "patient_id": "67890",
-      "patient_name": "DOE, JANE",
-      "patient_dob": "1962-03-15",
-      "dx": "H25.811",
-      "cpt": "00142",
-      "eye": "RIGHT",
-      "minutes": 20
-    },
-    {
-      "case_pos": 3,
-      "patient_id": "11223",
-      "patient_name": "SMITH, JOHN",
-      "patient_dob": "1948-07-22",
-      "dx": "H25.10",
-      "cpt": "00140",
-      "eye": "LEFT"
-    },
-    {
-      "case_pos": 4,
-      "patient_id": "33445",
-      "patient_name": "GARCIA, MARIA",
-      "patient_dob": "1955-11-08",
-      "dx": "H25.11",
-      "cpt": "00140",
-      "eye": "RIGHT",
-      "minutes": 12
-    },
-    {
-      "case_pos": 5,
-      "patient_id": "55667",
-      "patient_name": "CHEN, WEI",
-      "patient_dob": "1971-04-30",
-      "dx": "H26.9",
-      "cpt": "00140",
-      "eye": "LEFT"
-    },
-    {
-      "case_pos": 6,
-      "patient_id": "77889",
-      "patient_name": "PATEL, RAJ",
-      "patient_dob": "1943-09-12",
-      "dx": "H25.812",
-      "cpt": "00142",
-      "eye": "LEFT",
-      "minutes": 25
-    },
-    {
-      "case_pos": 7,
-      "patient_id": "99001",
-      "patient_name": "WILLIAMS, SUSAN",
-      "patient_dob": "1968-12-25",
-      "dx": "H25.811",
-      "cpt": "00142",
-      "eye": "RIGHT"
-    },
-    {
-      "case_pos": 8,
-      "patient_id": "22334",
-      "patient_name": "BROWN, MICHAEL",
-      "patient_dob": "1959-06-18",
-      "dx": "H25.10",
-      "cpt": "00140",
-      "eye": "LEFT",
-      "minutes": 18
+  "schedules": {
+    "01-20-2026": {
+      "current": {
+        "patients": {
+          "12345": {
+            "diagnosis": "H25.812",
+            "eye": "L",
+            "position": "1",
+            "patient_name": "LAST, FIRST",
+            "patient_dob": "01-01-1950"
+          },
+          "67890": {
+            "diagnosis": "H25.811",
+            "eye": "R",
+            "position": "2",
+            "patient_name": "DOE, JANE",
+            "patient_dob": "03-15-1962"
+          },
+          "11223": {
+            "diagnosis": "H25.10",
+            "eye": "L",
+            "position": "3",
+            "patient_name": "SMITH, JOHN",
+            "patient_dob": "07-22-1948"
+          },
+          "33445": {
+            "diagnosis": "H25.11",
+            "eye": "R",
+            "position": "4",
+            "patient_name": "GARCIA, MARIA",
+            "patient_dob": "11-08-1955"
+          },
+          "55667": {
+            "diagnosis": "H26.9",
+            "eye": "L",
+            "position": "5",
+            "patient_name": "CHEN, WEI",
+            "patient_dob": "04-30-1971"
+          },
+          "77889": {
+            "diagnosis": "H25.812",
+            "eye": "L",
+            "position": "6",
+            "patient_name": "PATEL, RAJ",
+            "patient_dob": "09-12-1943"
+          },
+          "99001": {
+            "diagnosis": "H25.811",
+            "eye": "R",
+            "position": "7",
+            "patient_name": "WILLIAMS, SUSAN",
+            "patient_dob": "12-25-1968"
+          },
+          "22334": {
+            "diagnosis": "H25.10",
+            "eye": "L",
+            "position": "8",
+            "patient_name": "BROWN, MICHAEL",
+            "patient_dob": "06-18-1959"
+          }
+        }
+      }
     }
-  ]
+  }
 }

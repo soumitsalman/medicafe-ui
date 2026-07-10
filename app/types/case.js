@@ -16,9 +16,9 @@
  * @property {string} [service_time]
  * @property {number} case_pos
  * @property {string} patient_id
- * @property {string} patient_name
- * @property {string} patient_dob
- * @property {string} dx
+ * @property {string|null} [patient_name]
+ * @property {string|null} [patient_dob]
+ * @property {string} diagnosis
  * @property {string} cpt
  * @property {string} eye
  * @property {number|null} minutes

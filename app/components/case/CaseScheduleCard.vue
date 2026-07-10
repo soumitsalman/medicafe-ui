@@ -10,13 +10,13 @@ const props = defineProps({
 const emit = defineEmits(['update', 'mission', 'cancel', 'undo', 'issue'])
 
 const minutesInput = ref()
-const dxValue = ref('')
+const diagnosisValue = ref('')
 const missionChecked = ref(false)
 const noteInput = ref('')
 const issueModalOpen = ref(false)
 
-const dxItems = computed(() => dxOptions().map(dx => ({ value: dx, label: dx })))
-const derivedCptEye = computed(() => deriveFromDx(dxValue.value))
+const diagnosisItems = computed(() => dxOptions().map(dx => ({ value: dx, label: dx })))
+const derivedCptEye = computed(() => deriveFromDx(diagnosisValue.value))
 
 const ISSUE_TYPE_LABELS = {
   identity_issue: 'Identity issue',
@@ -71,7 +71,7 @@ watch(
   () => props.caseItem,
   (c) => {
     minutesInput.value = c.minutes ?? undefined
-    dxValue.value = c.dx
+    diagnosisValue.value = c.diagnosis ?? ''
     missionChecked.value = c.mission ?? false
     noteInput.value = c.note ?? ''
   },
@@ -97,9 +97,9 @@ function onConfirmBillable() {
   emit('update', props.caseItem.case_id, { minutes })
 }
 
-function onDxChange(value) {
-  dxValue.value = value
-  debouncedUpdate({ dx: value })
+function onDiagnosisChange(value) {
+  diagnosisValue.value = value
+  debouncedUpdate({ diagnosis: value })
 }
 
 function onMissionToggle(checked) {
@@ -153,12 +153,16 @@ function onIssueSubmit(payload) {
         class="shrink-0"
       />
       <span
+        v-if="caseItem.patient_name"
         class="min-w-0 truncate text-headline-md"
         :class="statusDisplay.textClass"
       >
         {{ caseItem.patient_name }}
       </span>
-      <span class="shrink-0 text-sm text-muted">
+      <span
+        v-if="caseItem.patient_dob"
+        class="shrink-0 text-sm text-muted"
+      >
         {{ formatDobWithAge(caseItem.patient_dob, caseItem.service_date) }}
       </span>
       <div class="ml-auto flex shrink-0 items-center gap-2">
@@ -186,10 +190,10 @@ function onIssueSubmit(payload) {
 
     <div class="flex w-full items-center gap-1">
       <USelect
-        :model-value="dxValue"
-        :items="dxItems"
+        :model-value="diagnosisValue"
+        :items="diagnosisItems"
         class="w-32"
-        @update:model-value="onDxChange"
+        @update:model-value="onDiagnosisChange"
       />
       <UBadge
         :label="derivedCptEye.cpt"

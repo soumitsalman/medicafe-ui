@@ -15,10 +15,19 @@ def load_fixture(name: str) -> Any:
         return json.load(handle)
 
 
+def schedule_patient_count(payload: dict) -> int:
+    """Count patients across ScheduleInsertsPayload date keys."""
+    return sum(
+        len(day["current"]["patients"]) for day in payload["schedules"].values()
+    )
+
+
 SCHEDULE_RECEIVING = "schedule-receiving.json"
 SCHEDULE_RECEIVING_MINIMAL = "schedule-receiving-minimal.json"
 SCHEDULE_RECEIVING_PENDING_ONLY = "schedule-receiving-pending-only.json"
 SCHEDULE_RECEIVING_BUSY = "schedule-receiving-busy.json"
+SCHEDULE_UPDATING = "schedule-updating.json"
+SCHEDULE_UPDATING_MINIMAL = "schedule-updating-minimal.json"
 BILLABLE_SENDING = "billable-sending.json"
 BILLABLE_SENDING_MINIMAL = "billable-sending-minimal.json"
 EXPECTED_SCHEDULE_RECEIVING_RESPONSE = "expected-schedule-receiving-response.json"

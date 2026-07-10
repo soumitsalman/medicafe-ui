@@ -39,7 +39,10 @@ const minutesDisplay = computed(() => {
     </div>
 
     <div class="mt-2 flex w-full items-center justify-between">
-      <span class="min-w-0 flex-1 truncate text-headline-md text-highlighted">{{ caseItem.patient?.fullName ?? caseItem.patient_name }}</span>
+      <span
+        v-if="caseItem.patient?.fullName ?? caseItem.patient_name"
+        class="min-w-0 flex-1 truncate text-headline-md text-highlighted"
+      >{{ caseItem.patient?.fullName ?? caseItem.patient_name }}</span>
       <span class="shrink-0 text-sm text-muted">
         <template v-if="caseItem.patient">
           {{ formatDob(caseItem.patient.dateOfBirth) }} ({{ caseItem.patient.ageYears }}y)
@@ -52,7 +55,7 @@ const minutesDisplay = computed(() => {
 
     <div class="mt-2 flex w-full items-center justify-between">
       <div class="flex items-center gap-2">
-        <span class="min-w-0 flex-1 truncate text-sm text-muted">{{ caseItem.diagnosis ?? caseItem.dx }}</span>
+        <span class="min-w-0 flex-1 truncate text-sm text-muted">{{ caseItem.diagnosis }}</span>
         <UBadge
           v-for="tag in (caseItem.diagnosisModifierTags ?? [])"
           :key="tag"

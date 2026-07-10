@@ -1,16 +1,14 @@
 [
   {
-    "case_id": "a334ad13-d199-5585-bbe4-0accd3da64b9",
+    "case_id": "31388fc7-1bde-57ce-8428-01f6a446b990",
     "facility_id": "273f4ea2-ec1c-593c-9e13-1894c9bd1369",
     "provider_id": "9e69728e-4848-5917-8fb0-600ec0451f6b",
     "service_date": "2026-01-20",
-    "case_pos": 1,
+    "case_position": 1,
     "patient_id": "10001",
-    "patient_name": "TEST, PATIENT",
-    "patient_dob": "1960-05-05",
-    "dx": "H25.812",
+    "diagnosis": "H25.812",
     "cpt": "00142",
-    "eye": "LEFT",
+    "eye": "L",
     "minutes": 22,
     "status": "billable",
     "note": ""

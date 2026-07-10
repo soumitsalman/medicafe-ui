@@ -1,50 +1,45 @@
 {
-  "service_date": "2026-01-21",
-  "cases": [
-    {
-      "case_pos": 1,
-      "patient_id": "20001",
-      "patient_name": "ADAMS, ROBERT",
-      "patient_dob": "1952-02-14",
-      "dx": "H25.812",
-      "cpt": "00142",
-      "eye": "LEFT"
-    },
-    {
-      "case_pos": 2,
-      "patient_id": "20002",
-      "patient_name": "BAKER, LINDA",
-      "patient_dob": "1965-08-03",
-      "dx": "H25.811",
-      "cpt": "00142",
-      "eye": "RIGHT"
-    },
-    {
-      "case_pos": 3,
-      "patient_id": "20003",
-      "patient_name": "CLARK, DAVID",
-      "patient_dob": "1940-11-27",
-      "dx": "H25.10",
-      "cpt": "00140",
-      "eye": "LEFT"
-    },
-    {
-      "case_pos": 4,
-      "patient_id": "20004",
-      "patient_name": "DAVIS, EMILY",
-      "patient_dob": "1973-01-09",
-      "dx": "H25.11",
-      "cpt": "00140",
-      "eye": "RIGHT"
-    },
-    {
-      "case_pos": 5,
-      "patient_id": "20005",
-      "patient_name": "EVANS, JAMES",
-      "patient_dob": "1958-07-16",
-      "dx": "H26.9",
-      "cpt": "00140",
-      "eye": "LEFT"
+  "schedules": {
+    "01-21-2026": {
+      "current": {
+        "patients": {
+          "20001": {
+            "diagnosis": "H25.812",
+            "eye": "L",
+            "position": "1",
+            "patient_name": "ADAMS, ROBERT",
+            "patient_dob": "02-14-1952"
+          },
+          "20002": {
+            "diagnosis": "H25.811",
+            "eye": "R",
+            "position": "2",
+            "patient_name": "BAKER, LINDA",
+            "patient_dob": "08-03-1965"
+          },
+          "20003": {
+            "diagnosis": "H25.10",
+            "eye": "L",
+            "position": "3",
+            "patient_name": "CLARK, DAVID",
+            "patient_dob": "11-27-1940"
+          },
+          "20004": {
+            "diagnosis": "H25.11",
+            "eye": "R",
+            "position": "4",
+            "patient_name": "DAVIS, EMILY",
+            "patient_dob": "01-09-1973"
+          },
+          "20005": {
+            "diagnosis": "H26.9",
+            "eye": "L",
+            "position": "5",
+            "patient_name": "EVANS, JAMES",
+            "patient_dob": "07-16-1958"
+          }
+        }
+      }
     }
-  ]
+  }
 }

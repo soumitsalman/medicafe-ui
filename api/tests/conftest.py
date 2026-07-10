@@ -21,6 +21,8 @@ from fixtures import (  # noqa: E402
     SCHEDULE_RECEIVING_BUSY,
     SCHEDULE_RECEIVING_MINIMAL,
     SCHEDULE_RECEIVING_PENDING_ONLY,
+    SCHEDULE_UPDATING,
+    SCHEDULE_UPDATING_MINIMAL,
     load_fixture,
 )
 
@@ -54,6 +56,16 @@ def schedule_receiving_pending_only():
 @pytest.fixture
 def schedule_receiving_busy():
     return load_fixture(SCHEDULE_RECEIVING_BUSY)
+
+
+@pytest.fixture
+def schedule_updating():
+    return load_fixture(SCHEDULE_UPDATING)
+
+
+@pytest.fixture
+def schedule_updating_minimal():
+    return load_fixture(SCHEDULE_UPDATING_MINIMAL)
 
 
 @pytest.fixture

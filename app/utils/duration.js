@@ -85,16 +85,19 @@ export function debounce(fn, ms) {
   return debounced
 }
 
-/** @param {string} dob YYYY-MM-DD */
+/** @param {string|null|undefined} dob YYYY-MM-DD */
 export function formatDob(dob) {
+  if (!dob) return ''
   return format(parse(dob, 'yyyy-MM-dd', new Date()), 'MM/dd/yyyy')
 }
 
 /**
- * @param {string} dob YYYY-MM-DD
+ * @param {string|null|undefined} dob YYYY-MM-DD
  * @param {string} serviceDate YYYY-MM-DD
+ * @returns {string}
  */
 export function formatDobWithAge(dob, serviceDate) {
+  if (!dob) return ''
   const birth = parse(dob, 'yyyy-MM-dd', new Date())
   const ref = parse(serviceDate, 'yyyy-MM-dd', new Date())
   const age = differenceInYears(ref, birth)

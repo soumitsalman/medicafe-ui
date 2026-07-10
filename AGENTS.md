@@ -360,6 +360,7 @@ After successful send, display:
 5. All case state derivation in `caseSelectors.js` — never in components
 6. Use **date-fns** (`differenceInYears`, `format`, `parse`) for DOB formatting and age — do not hand-roll age math
 7. `service_date` uses ISO `YYYY-MM-DD` format throughout
+8. For `api/` Python code: use `api/.venv` for modules and execution (`api/.venv/bin/python`, `api/.venv/bin/pytest`, etc.)
 
 ---
 

@@ -1,9 +1,10 @@
-from .models import CaseInfo, IssueType, CaseStatus
-from .cases import CasesDB
+from .schemas import CaseInfo, PatientInfo, IssueType, CaseStatus
+from .storage import CasesDB
 
 __all__ = [
     "IssueType",
     "CaseStatus",
     "CaseInfo",
+    "PatientInfo",
     "CasesDB",
 ]
