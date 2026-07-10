@@ -224,7 +224,7 @@ class CasesDB:
         where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
         result = self._cursor().execute(
             f"""
-            SELECT cases.*, patients.patient_name, patients.patient_dob
+            SELECT cases.* EXCLUDE (ts), patients.patient_name, patients.patient_dob
             FROM cases
             LEFT JOIN patients ON cases.patient_id = patients.patient_id
             {where}

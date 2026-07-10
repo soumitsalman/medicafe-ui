@@ -181,7 +181,7 @@ export CASES_DB_PATH=./data/cases.duckdb   # optional; omit for in-memory DB
 fastapi run
 ```
 
-Point the UI at this server via `app/.env`:
+Point the UI at this server via `ui/.env`:
 
 ```
 NUXT_PUBLIC_API_BASE=http://localhost:8000
@@ -225,7 +225,7 @@ The image listens on `0.0.0.0:8000` and stores the database at `/data/cases.duck
 
 ### Pairing with the UI
 
-UI API settings are **runtime only** (never Docker build args). See `app/Dockerfile` / `app/README.md`:
+UI API settings are **runtime only** (never Docker build args). See `ui/Dockerfile` / `ui/README.md`:
 
 ```bash
 docker run --rm -p 3000:8080 \

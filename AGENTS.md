@@ -6,7 +6,7 @@
 ### Project Scope
 - UI wires to the FastAPI app in `api/` for schedule load (`GET /cases/schedules`), billable submit (`POST /cases/billables`), and billing history (`GET /cases/billables`)
 - Card edits (minutes, dx, mission, cancel, undo, issue) are **local in memory** until Send to Office
-- UI lives under `app/` (Nuxt app in `app/app/`)
+- UI lives under `ui/` (Nuxt app in `ui/app/`)
 - API base URL from deploy/runtime `NUXT_PUBLIC_API_BASE` → `runtimeConfig.public.apiBase` (Nuxt env override; never build-time; no mock fallback)
 - Optional `NUXT_PUBLIC_API_KEY` → `runtimeConfig.public.apiKey`; UI sends `X-API-KEY` when set; `api/` middleware validates via `API_KEY`
 
@@ -368,7 +368,7 @@ After successful send, display:
 ## Theming and Color
 
 ### Palette (calm clinical)
-Defined once via Nuxt UI color aliases in `app/app/app.config.ts`:
+Defined once via Nuxt UI color aliases in `ui/app/app.config.ts`:
 
 | Alias | Color | Role |
 |---|---|---|

@@ -5,7 +5,7 @@ Nuxt 4 + Nuxt UI front end for end-of-shift case documentation (Schedule → Sen
 ## Directory structure
 
 ```
-app/
+ui/
 ├── app/                    # Nuxt app source
 │   ├── app.config.ts       # Nuxt UI color aliases (Soft Medical palette)
 │   ├── app.vue             # Root shell
@@ -33,7 +33,7 @@ Repo root `docker-compose.yml` builds this package as service `app` (`./app`) al
 
 ## API contract
 
-Env (`app/.env` or container env → Nuxt `runtimeConfig.public` via `NUXT_PUBLIC_*`):
+Env (`ui/.env` or container env → Nuxt `runtimeConfig.public` via `NUXT_PUBLIC_*`):
 
 | Env var | Runtime key | Role |
 |---|---|---|
