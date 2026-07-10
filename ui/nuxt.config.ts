@@ -1,6 +1,4 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-declare const process: { env: Record<string, string | undefined> }
-
 export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
@@ -26,10 +24,12 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
+  // Empty defaults — set at deploy/runtime via BACKEND_BASE_URL / BACKEND_API_KEY
+  // (see server/plugins/backend-env.ts). Never bake these at build time.
   runtimeConfig: {
     public: {
-      apiBase: process.env.CASES_BASE_URL ?? 'http://localhost:8000',
-      apiKey: process.env.CASES_DB_API_KEY ?? ''
+      apiBase: '',
+      apiKey: ''
     }
   },
 

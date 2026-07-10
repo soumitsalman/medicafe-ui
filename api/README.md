@@ -182,11 +182,11 @@ export CASES_DB_PATH=./data/cases.duckdb   # optional; omit for in-memory DB
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Point the UI at this server via root `.env`:
+Point the UI at this server via `ui/.env`:
 
 ```
-CASES_BASE_URL=http://localhost:8000
-CASES_DB_API_KEY=          # optional; must match API if set
+BACKEND_BASE_URL=http://localhost:8000
+BACKEND_API_KEY=          # optional; must match API CASES_DB_API_KEY if set
 ```
 
 ---
@@ -226,16 +226,14 @@ The image listens on `0.0.0.0:8000` and stores the database at `/data/cases.duck
 
 ### Pairing with the UI
 
-Build the Nuxt UI with the API URL baked in (see root `Dockerfile`):
+UI API settings are **runtime only** (never Docker build args). See `ui/Dockerfile` / `ui/README.md`:
 
 ```bash
-docker build \
-  --build-arg CASES_BASE_URL=https://api.example.com \
-  --build-arg CASES_DB_API_KEY=your-secret \
-  -t medicafe-ui .
+docker run --rm -p 3000:8080 \
+  -e BACKEND_BASE_URL=https://api.example.com \
+  -e BACKEND_API_KEY=your-secret \
+  medicafe-ui
 ```
-
-Or override at runtime with `NUXT_PUBLIC_API_BASE` and `NUXT_PUBLIC_API_KEY`.
 
 ### Health checks
 

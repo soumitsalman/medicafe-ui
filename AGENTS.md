@@ -6,8 +6,9 @@
 ### Project Scope
 - UI wires to the FastAPI app in `api/` for schedule load (`GET /cases/schedules`), billable submit (`POST /cases/billables`), and billing history (`GET /cases/billables`)
 - Card edits (minutes, dx, mission, cancel, undo, issue) are **local in memory** until Send to Office
-- API base URL from `.env` `CASES_BASE_URL` → `runtimeConfig.public.apiBase` (no mock fallback)
-- Optional `CASES_DB_API_KEY` in root `.env` → `runtimeConfig.public.apiKey`; UI sends `X-API-KEY` when set; `api/` middleware validates via `CASES_DB_API_KEY` (falls back to `API_KEY`)
+- UI lives under `ui/` (Nuxt app in `ui/app/`)
+- API base URL from deploy/runtime `BACKEND_BASE_URL` → `runtimeConfig.public.apiBase` (via `server/plugins/backend-env.ts`; never build-time; no mock fallback)
+- Optional `BACKEND_API_KEY` → `runtimeConfig.public.apiKey`; UI sends `X-API-KEY` when set; `api/` middleware validates via `CASES_DB_API_KEY` (falls back to `API_KEY`)
 
 ---
 
@@ -205,7 +206,7 @@ In-memory case queue — no per-action HTTP round-trips:
 ### HTTP API (`useCaseApi`)
 - `getCases()` → `GET ${apiBase}/cases/schedules`
 - `sendToOffice(cases)` → `POST ${apiBase}/cases/billables`
-- `apiBase` from `CASES_BASE_URL` in `.env`
+- `apiBase` from runtime `BACKEND_BASE_URL` (never baked at build)
 
 ### Billing API (`useBillingApi`)
 - `getBillingSummaries()` → `GET ${apiBase}/cases/billables`
@@ -367,7 +368,7 @@ After successful send, display:
 ## Theming and Color
 
 ### Palette (calm clinical)
-Defined once via Nuxt UI color aliases in `app/app.config.ts`:
+Defined once via Nuxt UI color aliases in `ui/app/app.config.ts`:
 
 | Alias | Color | Role |
 |---|---|---|
@@ -425,8 +426,11 @@ Reference docs for this stack (Nuxt 4, Vue 3, Nuxt UI):
 - Answer ONLY yes or no where applicable
 - Provide bullet points for options and steps
 - Avoid explanations unless explicitly prompted
+- **Do only what was explicitly prompted.** No unsolicited refactors, renames, cleanups, drive-by edits, dependency bumps, formatting sweeps, or “while I’m here” changes.
+- **No git operations unless explicitly prompted** — no `commit`, `push`, `add`, `checkout`, `restore`, `reset`, `rebase`, `merge`, branch create/delete, or PR create/update. If unclear whether git was requested, ask first and do nothing.
 - NEVER make git commit or push unless explicitly prompted
 - When instructed to apply a specific pattern (e.g., "add cursor"), apply ONLY that pattern.
 - Never rename, rewrite, or restructure existing working code unless explicitly asked.
 - Never use `git checkout`, `git restore`, or `git reset` to fix mistakes — use targeted edits.
 - Minimize diff size. If the instruction is one line, the diff should be ~one line.
+- Touch only files required by the prompt. Prefer the smallest possible patch.

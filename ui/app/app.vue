@@ -14,8 +14,8 @@ useHead({
 })
 
 useSeoMeta({
-  title: 'Case Manager',
-  description: 'Modern Workflow — Soft Medical companion for anesthesiologists'
+  title: 'Medicafe',
+  description: 'Anesthesia case management for anesthesia providers'
 })
 </script>
 

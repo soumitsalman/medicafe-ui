@@ -1,0 +1,34 @@
+services:
+  api:
+    build: ./api
+    container_name: medicafe-api
+    ports:
+      - "8000:8080"
+    volumes:
+      - medicafe-cases:/data
+    environment:
+      CASES_DB_PATH: /data
+      CASES_DB_API_KEY: ${BACKEND_API_KEY:-}
+    networks:
+      - medicafe
+
+  app:
+    build: ./ui
+    container_name: medicafe-app
+    ports:
+      - "3000:8080"
+    environment:
+      # Browser reaches the API via the published host port
+      BACKEND_BASE_URL: ${BACKEND_BASE_URL:-http://localhost:8000}
+      BACKEND_API_KEY: ${BACKEND_API_KEY:-}
+    depends_on:
+      - api
+    networks:
+      - medicafe
+
+networks:
+  medicafe:
+    driver: bridge
+
+volumes:
+  medicafe-cases:

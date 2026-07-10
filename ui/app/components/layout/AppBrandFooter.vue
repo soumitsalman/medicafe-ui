@@ -1,5 +1,5 @@
 <script setup>
-import medicafeIcon from '~/assets/medicafe.ico'
+import medicafeIcon from '~/assets/medicafe.png'
 </script>
 
 <template>
