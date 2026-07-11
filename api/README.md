@@ -1,247 +1,178 @@
 # Medicafe API
 
-FastAPI backend for the **Modern Workflow** UI. Persists anesthesia case schedules and documented billables in a local [DuckDB](https://duckdb.org/) file.
+FastAPI + DuckDB backend for Modern Workflow. Persists anesthesia schedules and documented billables.
 
-## What it does
+**Flow:** ingest schedule → UI documents locally → submit terminals → billing history.
 
-1. **Ingest schedules** — external systems POST a shift’s scheduled cases; the API stores them with `status: scheduled` and deterministic UUIDs.
-2. **Serve the active queue** — the UI loads today’s scheduled cases via `GET /cases/schedules`.
-3. **Accept documentation** — after end-of-shift triage, the UI POSTs terminal cases (`billable`, `mission`, `cancelled`, `skipped`) via `POST /cases/billables`.
-4. **Expose billing history** — the Billing page reads submitted cases via `GET /cases/billables`.
+| Step | Route | Role |
+|------|-------|------|
+| Ingest new | `POST /cases/schedules` | Insert-only; force `scheduled` |
+| Correct/backfill | `PATCH /cases/schedules` | Update then insert missing |
+| Active queue | `GET /cases/schedules` | `status=scheduled` |
+| Provider inputs | `POST /cases/billables` | Update by `case_id` (terminals only) |
+| Billable history | `GET /cases/billables` | `billable\|mission\|cancelled\|skipped` |
 
-Case IDs are derived from facility, provider, service date/time, patient, and diagnosis when not supplied. Re-posting the same schedule payload upserts (`ON CONFLICT DO UPDATE` with `COALESCE` so null fields leave existing values).
+Auth: if `API_KEY` set, all routes except `/health` require `X-API-KEY`. Docs: `GET /docs`.
+
+---
+
+## Status & minutes
+
+| Status | Meaning |
+|--------|---------|
+| `scheduled` | Awaiting triage |
+| `billable` | Documented, bill (`minutes > 0`) |
+| `mission` | Documented, track only (`minutes > 0`) |
+| `cancelled` | Cancelled (`minutes == 0`) |
+| `skipped` | Issue-locked; see `sub_status` / `note` |
+
+`sub_status` (when `skipped`): `identity_issue` | `needs_review`.
+
+**Dates:** schedule body `dos` = `MM-DD-YYYY`. Query params + `CaseInfo.service_date` = ISO `YYYY-MM-DD`.
+
+**IDs:** `case_id` = `uuid5(NAMESPACE_OID, "{YYYYMMDD}-{patient_id}")` when omitted. Schedule routes key by `(patient_id, dos)`; billables by `case_id`.
 
 ---
 
 ## Routes
 
-| Method | Path | Purpose |
-|--------|------|---------|
-| `GET` | `/health` | Liveness check (no auth) |
-| `POST` | `/cases/schedules` | Ingest scheduled cases for a shift |
-| `GET` | `/cases/schedules` | List scheduled cases (default facility/provider) |
-| `POST` | `/cases/billables` | Update cases to terminal statuses |
-| `GET` | `/cases/billables` | List submitted billable/mission/cancelled/skipped cases |
-
-Interactive docs: `GET /docs` (Swagger UI) when the server is running.
-
 ### `GET /health`
+No auth. `{"status":"ok"}`.
 
-```json
-{ "status": "ok" }
-```
+### `POST /cases/schedules` — insert new scheduled cases
+**When:** first-time shift ingest. **Not** for updates → use PATCH.
 
-### `POST /cases/schedules`
+**Identity:** `(patient_id, dos MM-DD-YYYY)`. Patients by `patient_id`.
 
-Ingest cases for a service date. Each case is stored as `scheduled`.
+**Behavior:** forces `status=scheduled`; insert cases+patients; existing keys skipped (`ON CONFLICT DO NOTHING`).
 
-**Request body:**
+**Body:** `CaseSchedules` — `{ "rows": [{ "key": { "patient_id", "dos" }, "patch": { ... } }, ...] }` (`rows` min 1).
 
-```json
-{
-  "service_date": "2026-01-20",
-  "facility_id": "273f4ea2-ec1c-593c-9e13-1894c9bd1369",
-  "provider_id": "9e69728e-4848-5917-8fb0-600ec0451f6b",
-  "cases": [
-    {
-      "case_pos": 1,
-      "patient_id": "10001",
-      "patient_name": "TEST, PATIENT",
-      "patient_dob": "1960-05-05",
-      "dx": "H25.812",
-      "cpt": "00142",
-      "eye": "LEFT",
-      "minutes": 15
-    }
-  ]
-}
-```
+**Patch fields:** `patient_name`, `diagnosis`, `cpt`, `eye`, `minutes`, `docx_position`→`case_position`, `status` (ignored/overwritten), `note`.
 
-`facility_id` and `provider_id` default to deterministic UUIDs when omitted. `minutes` on ingest is a suggested default only.
+**Returns:** `{ "inserted": [<case_id>, ...] }`.
 
-**Response:**
+### `PATCH /cases/schedules` — update or backfill
+**When:** enrich/correct existing; backfill skipped rows. Prefer POST for brand-new loads.
 
-```json
-{
-  "scheduled": ["a334ad13-d199-5585-bbe4-0accd3da64b9"]
-}
-```
+**Behavior:** `update_cases` then `insert_cases` (order matters). Patient update only if `patient_name` set; then `insert_patients`. Status accepted: `scheduled|skipped|mission|billable` (else nullified).
 
-Returns only newly inserted case IDs; duplicates return an empty `scheduled` array.
+**Body:** same `CaseSchedules` as POST.
 
-### `GET /cases/schedules`
+**Returns:** `{ "updated": [...], "inserted": [...] }`.
 
-Returns all cases with `status: scheduled` for the default facility and provider.
+### `GET /cases/schedules` — list active queue
+**Filter:** `?service_date=YYYY-MM-DD` optional. Status fixed to `scheduled`. Sorted by `case_position`.
 
-**Response:** `CaseInfo[]`
+**Returns:** `CaseView[]` (case + `patient_name`, `patient_dob`).
 
-```json
-[
-  {
-    "case_id": "a334ad13-d199-5585-bbe4-0accd3da64b9",
-    "service_date": "2026-01-20",
-    "case_pos": 1,
-    "patient_id": "10001",
-    "patient_name": "TEST, PATIENT",
-    "patient_dob": "1960-05-05",
-    "dx": "H25.812",
-    "cpt": "00142",
-    "eye": "LEFT",
-    "minutes": 15,
-    "status": "scheduled"
-  }
-]
-```
+### `POST /cases/billables` — submit to billing office
+**When:** UI Send to Office (all cases terminal).
 
-### `POST /cases/billables`
+**Identity:** each item needs `case_id`. Dropped if missing `case_id` or status ∉ `billable|mission|cancelled|skipped`.
 
-Update documented cases. Body is a `CaseInfo[]` with terminal `status` values.
+**Behavior:** update only; no inserts; unknown IDs ignored.
 
-**Request body:**
+**Body:** `CaseInfo[]` (include minutes, diagnosis, status, optional `sub_status`/`note` for skipped).
 
-```json
-[
-  {
-    "case_id": "a334ad13-d199-5585-bbe4-0accd3da64b9",
-    "service_date": "2026-01-20",
-    "case_pos": 1,
-    "patient_id": "10001",
-    "patient_name": "TEST, PATIENT",
-    "patient_dob": "1960-05-05",
-    "dx": "H25.812",
-    "cpt": "00142",
-    "eye": "LEFT",
-    "minutes": 22,
-    "status": "billable",
-    "note": ""
-  }
-]
-```
+**Returns:** `{ "updated": [<case_id>, ...] }`.
 
-Skipped cases may include `sub_status` (`identity_issue`, `needs_review`) and `note`.
+### `GET /cases/billables` — billing history
+**Filter:** `?service_date=YYYY-MM-DD` optional. Status ∈ `billable|mission|cancelled|skipped`.
 
-**Response:**
-
-```json
-{
-  "billable": ["a334ad13-d199-5585-bbe4-0accd3da64b9"],
-  "mission": [],
-  "cancelled": [],
-  "issues": []
-}
-```
-
-### `GET /cases/billables`
-
-Returns submitted cases (`billable`, `mission`, `cancelled`, `skipped`) grouped with the latest service date.
-
-**Response:**
-
-```json
-{
-  "facility_id": "273f4ea2-ec1c-593c-9e13-1894c9bd1369",
-  "provider_id": "9e69728e-4848-5917-8fb0-600ec0451f6b",
-  "service_date": "2026-01-20",
-  "cases": []
-}
-```
-
-### Case status values
-
-| Status | Meaning |
-|--------|---------|
-| `scheduled` | Awaiting documentation |
-| `billable` | Documented, billable minutes |
-| `mission` | Documented mission case |
-| `cancelled` | Cancelled (`minutes: 0`) |
-| `skipped` | Flagged for office review |
+**Returns:** `CaseView[]`.
 
 ---
 
-## Environment variables
+## Request models (`routers/models.py`)
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `CASES_DB_PATH` | `:memory:` (local) / `/data/cases.duckdb` (Docker) | DuckDB file path |
-| `API_KEY` | — | Optional; enables `X-API-KEY` gate when set |
+```
+CaseSchedules { rows: CaseRow[1..] }
+CaseRow { key: CaseKey, patch: CasePatch }
+CaseKey { patient_id: str, dos: "MM-DD-YYYY" }
+CasePatch {
+  patient_name?, diagnosis?, cpt?, eye?,
+  minutes?, docx_position?, status?, note?
+}
+```
 
-When an API key env var is set, all routes except `/health` require header `X-API-KEY: <key>`.
+`CaseUpdateResult` = `dict[str, list[UUID]]` — keys `inserted` and/or `updated`.
 
 ---
 
-## Local development
+## DB (`db/`)
+
+DuckDB file: `{CASES_DB_PATH}/{DEFAULT_FACILITY_ID.hex}.duckdb` (see `main.py` lifespan).
+
+### Tables
+
+**`cases`** PK `case_id`
+| Column | Type | Notes |
+|--------|------|-------|
+| case_id | UUID PK | Deterministic from date+patient if unset |
+| service_date | DATE NOT NULL | |
+| patient_id | VARCHAR NOT NULL | → patients |
+| case_position | INTEGER | UI sort only |
+| diagnosis | VARCHAR NOT NULL | |
+| cpt, eye | VARCHAR | |
+| minutes | INTEGER | null / 0 / >0 semantics above |
+| status | VARCHAR NOT NULL | CaseStatus |
+| sub_status | VARCHAR[] | IssueType[] |
+| note | VARCHAR | |
+| ts | TIMESTAMP | stamped on write |
+| provider_id | UUID | optional / future |
+| service_time | TIME | optional / future |
+
+**`patients`** PK `patient_id`
+| Column | Type |
+|--------|------|
+| patient_id | VARCHAR PK |
+| patient_name | VARCHAR |
+| patient_dob | DATE |
+| ts | TIMESTAMP |
+
+### Pydantic (`db/schemas.py`)
+
+- `CaseInfo` — case row fields (no patient name/dob)
+- `PatientInfo` — patient row
+- `CaseView` — `CaseInfo` + `patient_name` + `patient_dob` (joined read model; `ts` excluded)
+
+### Operations (`CasesDB`)
+
+| Method | Semantics |
+|--------|-----------|
+| `insert_cases` | Ensure `case_id`, stamp `ts`. `INSERT … ON CONFLICT (case_id) DO NOTHING RETURNING case_id` |
+| `update_cases` | Ensure `case_id`, stamp `ts`. `UPDATE … SET col=COALESCE(v.col, cases.col)` — **nulls do not overwrite** |
+| `insert_patients` | Same insert-ignore pattern on `patient_id` |
+| `update_patients` | Same COALESCE update on `patient_id` |
+| `query_cases` | Optional filters: `patient_id`, `service_date`, `status[]`, `provider_id`. `LEFT JOIN patients`; returns `CaseView[]` |
+
+`create_case_id(case)` (`db/ids.py`): requires `service_date` + `patient_id`; else `ValueError`.
+
+---
+
+## Env
+
+| Var | Default | Notes |
+|-----|---------|-------|
+| `CASES_DB_PATH` | `.` | Dir for DuckDB file |
+| `API_KEY` | unset | Enables `X-API-KEY` gate |
+
+---
+
+## Local / test / Docker
 
 ```bash
-cd api
-python -m venv .venv
-source .venv/bin/activate
+cd api && python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-
-export CASES_DB_PATH=./data/cases.duckdb   # optional; omit for in-memory DB
-fastapi run
+export CASES_DB_PATH=./data
+fastapi run          # :8000
+pytest               # use api/.venv/bin/pytest
 ```
 
-Point the UI at this server via `ui/.env`:
-
-```
-NUXT_PUBLIC_API_BASE=http://localhost:8000
-NUXT_PUBLIC_API_KEY=          # optional; must match API_KEY if set
-```
-
----
-
-## Tests
+UI: `NUXT_PUBLIC_API_BASE=http://localhost:8000`, optional `NUXT_PUBLIC_API_KEY` matching `API_KEY`.
 
 ```bash
-cd api
-pytest
-```
-
-Fixtures live in `tests/*.json`. Tests use a temporary DuckDB file per run.
-
----
-
-## Docker deployment
-
-Build from the `api/` directory:
-
-```bash
-cd api
 docker build -t medicafe-api .
-```
-
-Run with a persistent data volume:
-
-```bash
-docker run -d \
-  --name medicafe-api \
-  -p 8000:8000 \
-  -v medicafe-cases:/data \
-  -e API_KEY=your-secret \
-  medicafe-api
-```
-
-The image listens on `0.0.0.0:8000` and stores the database at `/data/cases.duckdb`.
-
-### Pairing with the UI
-
-UI API settings are **runtime only** (never Docker build args). See `ui/Dockerfile` / `ui/README.md`:
-
-```bash
-docker run --rm -p 3000:8080 \
-  -e NUXT_PUBLIC_API_BASE=https://api.example.com \
-  -e NUXT_PUBLIC_API_KEY=your-secret \
-  medicafe-ui
-```
-
-### Health checks
-
-```bash
-curl http://localhost:8000/health
-```
-
-With API key enabled:
-
-```bash
-curl -H "X-API-KEY: your-secret" http://localhost:8000/cases/schedules
+docker run -d -p 8000:8000 -v medicafe-cases:/data -e API_KEY=secret medicafe-api
 ```

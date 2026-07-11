@@ -18,7 +18,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Medicafe API",
-    description="Schedule and billable cases API for Medicafe.",
+    description="Case management system API for anesthesia scheduling and billing.",
     version="0.1.0",
     lifespan=lifespan,
 )
