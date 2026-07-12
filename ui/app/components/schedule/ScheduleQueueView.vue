@@ -32,6 +32,7 @@ async function loadCases() {
 
 await loadCases()
 
+// TODO: remove this.
 // #region agent log
 watch([cases, loading], ([c, isLoading]) => {
   const q = queueCases(c)

@@ -1,0 +1,33 @@
+# Root-context merged image ignores
+.git
+.github
+.cursor
+.idea
+.fleet
+.DS_Store
+
+# UI build outputs and dependencies
+ui/node_modules
+ui/.pnpm-store
+ui/.output
+ui/.nuxt
+ui/.nitro
+ui/.cache
+ui/dist
+
+# API local runtime/dev files
+api/.venv
+api/__pycache__
+api/.pytest_cache
+api/.data
+api/services
+
+# Local env and logs
+.env
+.env.*
+ui/.env
+ui/.env.*
+api/.env
+api/.env.*
+*.log
+logs

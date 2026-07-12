@@ -28,6 +28,7 @@ export default defineNuxtConfig({
   //   NUXT_PUBLIC_API_BASE → public.apiBase
   //   NUXT_PUBLIC_API_KEY  → public.apiKey
   runtimeConfig: {
+    apiProxyBase: 'http://127.0.0.1:9000',
     public: {
       apiBase: '',
       apiKey: ''
