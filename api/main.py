@@ -2,7 +2,6 @@ from contextlib import asynccontextmanager
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from middleware import ApiKeyMiddleware
 
 from db import CasesDB
 from routers import cases_router, DEFAULT_FACILITY_ID
@@ -29,7 +28,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["X-API-KEY", "Content-Type"],
 )
-app.add_middleware(ApiKeyMiddleware)
 app.include_router(cases_router)
 
 @app.get("/health")

@@ -52,6 +52,8 @@ No auth. `{"status":"ok"}`.
 
 **Returns:** `{ "inserted": [<case_id>, ...] }`.
 
+Sample request: [SERVICE_LINE_INPUT_REMOTE_V0_PROPOSAL.md](api/SERVICE_LINE_INPUT_REMOTE_V0_PROPOSAL.md)
+
 ### `PATCH /cases/schedules` — update or backfill
 **When:** enrich/correct existing; backfill skipped rows. Prefer POST for brand-new loads.
 
@@ -60,6 +62,8 @@ No auth. `{"status":"ok"}`.
 **Body:** same `CaseSchedules` as POST.
 
 **Returns:** `{ "updated": [...], "inserted": [...] }`.
+
+Sample request: [SERVICE_LINE_INPUT_REMOTE_V0_PROPOSAL.md](api/SERVICE_LINE_INPUT_REMOTE_V0_PROPOSAL.md)
 
 ### `GET /cases/schedules` — list active queue
 **Filter:** `?service_date=YYYY-MM-DD` optional. Status fixed to `scheduled`. Sorted by `case_position`.

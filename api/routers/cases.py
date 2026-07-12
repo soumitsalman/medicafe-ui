@@ -1,13 +1,13 @@
 import asyncio
+import os
 from datetime import date, datetime
 from typing import Annotated, Optional
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, Request, Query
+from fastapi import APIRouter, Depends, HTTPException, Request, Query, Header
 
 from .models import *
 from db import CaseInfo, CasesDB, PatientInfo, CaseView
 
-router = APIRouter(prefix="/cases", tags=["cases"])
 
 def _null_str(value: Optional[str]) -> Optional[str]:
     """Normalize optional strings: empty/falsy → None; otherwise return the value."""
@@ -79,7 +79,18 @@ def get_cases_db(request: Request) -> CasesDB:
     """FastAPI dependency: resolve the CasesDB instance from app state."""
     return request.app.state.db
 
+def require_api_key(x_api_key: Annotated[Optional[str], Header(alias="X-API-KEY")] = None):
+    configured_key = os.getenv("API_KEY")
+    if configured_key and x_api_key != configured_key:
+        raise HTTPException(status_code=401, detail="Invalid or missing API key")
+
 CaseDBDependency = Annotated[CasesDB, Depends(get_cases_db)]
+
+router = APIRouter(
+    prefix="/cases",
+    tags=["cases"],
+    dependencies=[Depends(require_api_key)],
+)
 
 @router.post(
     "/schedules", 
