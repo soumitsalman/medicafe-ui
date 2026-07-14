@@ -38,7 +38,8 @@ RUN pip install --no-cache-dir --upgrade -r /app/api/requirements.txt
 
 COPY api/ /app/api/
 COPY --from=ui-build /ui/.output /app/ui/.output
+COPY entrypoint.sh /app/entrypoint.sh
 
 EXPOSE 8080
 
-CMD ["bash", "-lc", ": \"${NUXT_API_PROXY_BASE:=http://${API_HOST}:${API_PORT}}\"; export NUXT_API_PROXY_BASE HOST=\"$UI_HOST\" PORT=\"$UI_PORT\"; cd /app/api && fastapi run main.py --host \"$API_HOST\" --port \"$API_PORT\" & api_pid=$!; node /app/ui/.output/server/index.mjs & ui_pid=$!; trap 'kill -TERM $api_pid $ui_pid 2>/dev/null' TERM INT; wait -n $api_pid $ui_pid; status=$?; kill -TERM $api_pid $ui_pid 2>/dev/null; wait || true; exit $status"]
+ENTRYPOINT ["bash", "/app/entrypoint.sh"]

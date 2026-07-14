@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from datetime import date, datetime
 
-import duckdb
 import pytest
 
 from db.ids import create_case_id
@@ -15,12 +14,6 @@ SLI_REMOTE_INITIAL_INSERT = "sli-remote-initial-insert.json"
 SLI_REMOTE_UPSERT_MINUTES_NOTE = "sli-remote-upsert-minutes-note.json"
 SLI_REMOTE_UPSERT_DX_CPT = "sli-remote-upsert-dx-cpt.json"
 SLI_REMOTE_UPSERT_CLEAR_AND_COMPLETE = "sli-remote-upsert-clear-and-complete.json"
-
-UPSERT_FIXTURES = (
-    SLI_REMOTE_UPSERT_MINUTES_NOTE,
-    SLI_REMOTE_UPSERT_DX_CPT,
-    SLI_REMOTE_UPSERT_CLEAR_AND_COMPLETE,
-)
 
 _MDY = "%m-%d-%Y"
 
@@ -126,14 +119,24 @@ def test_post_schedules_upsert_fixture_inserts_only(client, sli_remote_upsert_dx
     "fixture_name",
     (SLI_REMOTE_UPSERT_MINUTES_NOTE, SLI_REMOTE_UPSERT_CLEAR_AND_COMPLETE),
 )
-def test_post_schedules_upsert_without_diagnosis_fails_not_null(client, fixture_name):
-    """Sparse upsert patches omit diagnosis; insert requires NOT NULL diagnosis."""
+def test_post_schedules_without_diagnosis_returns_422_without_partial_insert(
+    client, fixture_name
+):
+    """POST rejects rows without diagnosis before writing patients or cases."""
     payload = load_fixture(fixture_name)
-    with pytest.raises(duckdb.ConstraintException, match="cases.diagnosis"):
-        client.post("/cases/schedules", json=payload)
+    response = client.post("/cases/schedules", json=payload)
+
+    assert response.status_code == 422
+    assert response.json()["detail"]["message"] == "Invalid schedule input"
+    assert response.json()["detail"]["rows"]
+    assert client.get("/cases/schedules").json() == []
+    patients = client.app.state.db._cursor().execute(
+        "SELECT COUNT(*) FROM patients"
+    ).fetchone()[0]
+    assert patients == 0
 
 
-@pytest.mark.parametrize("fixture_name", UPSERT_FIXTURES)
+@pytest.mark.parametrize("fixture_name", (SLI_REMOTE_UPSERT_DX_CPT,))
 def test_post_schedules_upsert_fixture_does_not_update_existing(
     client, sli_remote_initial_insert, fixture_name
 ):

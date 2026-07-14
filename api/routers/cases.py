@@ -86,6 +86,29 @@ def require_api_key(x_api_key: Annotated[Optional[str], Header(alias="X-API-KEY"
 
 CaseDBDependency = Annotated[CasesDB, Depends(get_cases_db)]
 
+
+def validate_schedule_input(payload: CaseSchedules) -> CaseSchedules:
+    """Validate required fields for new schedule ingestion before database writes."""
+    invalid_rows = [
+        {
+            "row": index,
+            "dos": row.key.dos,
+            "patient_id": row.key.patient_id,
+            "error": "diagnosis is required for new schedule ingestion",
+        }
+        for index, row in enumerate(payload.rows)
+        if not row.patch.diagnosis or not row.patch.diagnosis.strip()
+    ]
+    if invalid_rows:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "message": "Invalid schedule input",
+                "rows": invalid_rows,
+            },
+        )
+    return payload
+
 router = APIRouter(
     prefix="/cases",
     tags=["cases"],
@@ -108,14 +131,15 @@ router = APIRouter(
         "RETURNS: `{ \"inserted\": [<case_id UUID>, ...] }` — UUIDs of newly inserted cases only."
     )
 )
-async def post_schedules(cases_db: CaseDBDependency, payload: CaseSchedules) -> CaseUpdateResult:
+async def post_schedules(
+    cases_db: CaseDBDependency,
+    payload: Annotated[CaseSchedules, Depends(validate_schedule_input)],
+) -> CaseUpdateResult:
     """Insert new scheduled cases and patients; return inserted case_ids. Existing keys are ignored."""
     cases, patients = _split_case_schedules(payload)
     cases = _stamp_scheduled(cases)
-    _, case_ids = await asyncio.gather(
-        asyncio.to_thread(cases_db.insert_patients, patients),
-        asyncio.to_thread(cases_db.insert_cases, cases),
-    )
+    await asyncio.to_thread(cases_db.insert_patients, patients)
+    case_ids = await asyncio.to_thread(cases_db.insert_cases, cases)
     return CaseUpdateResult(inserted=case_ids)
 
 
