@@ -10,7 +10,7 @@ from .schemas import CaseInfo, CaseStatus, CaseView, IssueType, PatientInfo
 
 _RETRY_CONFIG = {
     "stop": stop_after_attempt(3),
-    "wait": wait_fixed(2),
+    "wait": wait_fixed(5),
     "reraise": True,
 }
 

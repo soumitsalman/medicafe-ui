@@ -26,3 +26,6 @@ primary_region = 'iad'
 [[vm]]
   size = 'shared-cpu-2x'
   memory = '1gb'
+
+[env]
+  API_READINESS_INTERVAL=2
