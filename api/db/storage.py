@@ -1,11 +1,18 @@
 from datetime import date, datetime
 from typing import Optional
 from uuid import UUID
-
+from tenacity import retry, stop_after_attempt, wait_fixed
 import duckdb
 
 from .ids import create_case_id
 from .schemas import CaseInfo, CaseStatus, CaseView, IssueType, PatientInfo
+
+
+_RETRY_CONFIG = {
+    "stop": stop_after_attempt(3),
+    "wait": wait_fixed(2),
+    "reraise": True,
+}
 
 _DB_SCHEMA_SQL = """
 CREATE TABLE IF NOT EXISTS cases (
@@ -81,9 +88,12 @@ _PATIENT_UPDATE_SET = ", ".join(
 class CasesDB:
     def __init__(self, db_path: str):
         self.conn = duckdb.connect(db_path or ":memory:")
-        self._cursor().execute(_DB_SCHEMA_SQL)
+        self._initialized = False        
 
     def _cursor(self) -> duckdb.DuckDBPyConnection:
+        if not self._initialized:
+            self.conn.cursor().execute(_DB_SCHEMA_SQL)
+            self._initialized = True
         return self.conn.cursor()
 
     @classmethod
@@ -120,6 +130,7 @@ class CasesDB:
     def _patient_values_clause(cls, n: int) -> str:
         return ", ".join(_PATIENT_ROW_PLACEHOLDERS for _ in range(n))
 
+    @retry(**_RETRY_CONFIG)
     def insert_cases(self, cases: list[CaseInfo]) -> list[UUID]:
         if not cases:
             return []
@@ -140,6 +151,7 @@ class CasesDB:
         ).fetchall()
         return [row[0] for row in rows]
 
+    @retry(**_RETRY_CONFIG)
     def update_cases(self, cases: list[CaseInfo]) -> list[UUID]:
         if not cases:
             return []
@@ -161,6 +173,7 @@ class CasesDB:
         ).fetchall()
         return [row[0] for row in rows]
 
+    @retry(**_RETRY_CONFIG)
     def insert_patients(self, patients: list[PatientInfo]) -> list[str]:
         patients = [p for p in patients if p.patient_id]
         if not patients:
@@ -180,6 +193,7 @@ class CasesDB:
         ).fetchall()
         return [row[0] for row in rows]
 
+    @retry(**_RETRY_CONFIG)
     def update_patients(self, patients: list[PatientInfo]) -> list[str]:
         patients = [p for p in patients if p.patient_id]
         if not patients:
@@ -200,6 +214,7 @@ class CasesDB:
         ).fetchall()
         return [row[0] for row in rows]
 
+    @retry(**_RETRY_CONFIG)
     def query_cases(
         self,
         patient_id: Optional[str] = None,
@@ -237,5 +252,7 @@ class CasesDB:
             for row in result.fetchall()
         ]
 
+    @retry(**_RETRY_CONFIG)
     def close(self):
         self.conn.close()
+        self._initialized = False
